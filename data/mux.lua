@@ -10,7 +10,7 @@ for idx, direction in pairs({ "north", "east", "south", "west" }) do
 	entity_sprite[direction] = {
 		filename = "__ribbon-cables__/graphics/mux-entity.png",
 		width = 128,
-		height = 127,
+		height = 128,
 		scale = 0.25,
 		x = (idx - 1) * 128,
 		shift = util.by_pixel(0, 0),
@@ -65,7 +65,7 @@ local item = {
 	stack_size = 50,
 	icon = "__ribbon-cables__/graphics/icon-jumper-cable.png",
 	icon_size = 256,
-	order = "f[iber-optics]",
+	order = "m",
 	subgroup = "circuit-network",
 }
 
