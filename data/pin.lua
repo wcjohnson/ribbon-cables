@@ -35,7 +35,6 @@ local pin = {
 	collision_mask = collision_mask_util.new_mask(),
 	selection_box = { { -0.1, -0.1 }, { 0.1, 0.1 } },
 	flags = {
-		"not-rotatable",
 		"placeable-off-grid",
 		"not-on-map",
 		"not-deconstructable",

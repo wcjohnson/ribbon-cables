@@ -22,7 +22,8 @@ end
 function Multiplexer:update_connection_render_objects()
 	self:destroy_connection_render_objects()
 	local render_objects = self.connection_render_objects
-	local _, _, self_entity = remote.call("things", "get_status", self.thing_id)
+	local _, self_thing = remote.call("things", "get", self.thing_id)
+	local self_entity = self_thing and self_thing.entity
 	if not self_entity or not self_entity.valid then return end
 	local _, edges =
 		remote.call("things", "get_edges", "ribbon-cables", self.thing_id)
@@ -31,7 +32,8 @@ function Multiplexer:update_connection_render_objects()
 		-- Only draw edges for which we are the lower ID. This will ensure each
 		-- edge is drawn only once.
 		if edge.first ~= self.thing_id then goto continue end
-		local _, _, dst_entity = remote.call("things", "get_status", dst_id)
+		local _, dst_thing = remote.call("things", "get", dst_id)
+		local dst_entity = dst_thing and dst_thing.entity
 		if
 			dst_entity
 			and dst_entity.valid

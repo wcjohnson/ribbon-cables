@@ -1,13 +1,13 @@
 {
   "name": "ribbon-cables",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "title": "Ribbon Cables",
   "author": "The LORD thy GOD",
-  "contact": "https://github.com/project-cybersyn/ribbon-cables",
-  "homepage": "https://github.com/project-cybersyn/ribbon-cables",
+  "contact": "https://github.com/wcjohnson/ribbon-cables",
+  "homepage": "https://github.com/wcjohnson/ribbon-cables",
   "description": "Multiplex many circuit network connections onto a single compact cable.",
   "factorio_version": "2.0",
-  "dependencies": [ "base >= 2.0.66", "0-things >= 1.0.0" ],
+  "dependencies": [ "base >= 2.0.66", "0-things >= 0.1.0" ],
   "package": {
     "git_publish_branch": "main",
     "ignore": [ "crowdin.yml", "stylua.toml", "tests", "doc" ],

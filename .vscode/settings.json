@@ -9,7 +9,11 @@
     "c:\\Users\\wcjoh\\AppData\\Roaming\\Code\\User\\workspaceStorage\\20b9db04aedae1d15afc978e15f5f619\\justarandomgeek.factoriomod-debug\\sumneko-3rd"
   ],
   "Lua.workspace.checkThirdParty": "ApplyInMemory",
-  "Lua.workspace.library": ["lib"],
+  "Lua.workspace.library": [
+    "lib",
+    "d:/dev/factorio/0-things/types.lua",
+    "d:/dev/factorio/0-things/remote-interface.lua"
+  ],
   "[lua]": {
     "editor.defaultFormatter": "JohnnyMorganz.stylua",
     "editor.formatOnSave": true

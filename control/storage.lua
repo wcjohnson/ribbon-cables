@@ -1,5 +1,5 @@
 ---@class ribbon_cables.PlayerState
----@field connection_source? LuaEntity
+---@field connection_source? int64 ID of the Thing selected as source for a connection
 
 ---@class ribbon_cables.Storage
 ---@field players {[uint]: ribbon_cables.PlayerState}
@@ -14,6 +14,12 @@ function _G.get_or_create_player_state(player_index)
 		storage.players[player_index] = {}
 	end
 	return storage.players[player_index]
+end
+
+---@param player_index uint
+---@return ribbon_cables.PlayerState?
+function _G.get_player_state(player_index)
+	return storage.players and storage.players[player_index]
 end
 
 ---@param thing_id int

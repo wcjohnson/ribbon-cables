@@ -1,6 +1,7 @@
 local entities_lib = require("lib.core.entities")
 local pos_lib = require("lib.core.math.pos")
 local constants = require("lib.constants")
+local orientation_lib = require("lib.core.orientation.orientation")
 
 require("lib.core.debug-log")
 set_print_debug_log(true)
@@ -12,81 +13,169 @@ require("control.storage")
 -- installed.
 if script.active_mods["gvv"] then require("__gvv__.gvv")() end
 
-script.on_event("things-on_initialized", function(event)
-	debug_log("RIBBON-CABLES: things-on_initialized: ", event)
-	local entity = event.entity --[[@as LuaEntity?]]
-	if
-		entity
-		and entity.valid
-		and entities_lib.true_prototype_name(entity) == constants.mux_name
-	then
-		get_or_create_multiplexer_state(event.thing_id)
-		debug_log(
-			"RIBBON-CABLES: created state ",
-			event.thing_id,
-			", now creating pins..."
-		)
-		local pin_pos =
-			pos_lib.pos_add(pos_lib.pos_new(entity.position), 1, { 0, -1 })
-		local pin1 = entity.surface.create_entity({
-			name = constants.pin_name,
-			position = pin_pos,
-			force = entity.force,
-			create_build_effect_smoke = false,
-			raise_built = true,
-		})
-		remote.call("things", "add_child", event, 1, pin1)
-	end
-end)
+local pin_offsets = {
+	-- Beginning in top left corner (-1, -1) and going clockwise hitting each cardinal direction and each corner.
+	{ -1, -1 },
+	{ 0, -1 },
+	{ 1, -1 },
+	{ 1, 0 },
+	{ 1, 1 },
+	{ 0, 1 },
+	{ -1, 1 },
+	{ -1, 0 },
+}
 
-script.on_event("things-on_status_changed", function(event)
-	if event.new_status == "destroyed" then
-		local st = get_multiplexer_state(event.thing_id)
-		if st then st:destroy() end
-	end
-end)
-
-script.on_event("things-on_edges_changed", function(event)
-	if event.graph_name ~= "ribbon-cables" then return end
-	debug_log("RIBBON-CABLES: things-on_edges_changed: ", event.nodes)
-	for thing_id in pairs(event.nodes) do
-		local st = get_multiplexer_state(thing_id)
-		if st then st:update_connection_render_objects() end
-	end
-end)
+local pin_distance = 2
 
 script.on_event(
-	"ribbon-cables-click",
-	---@param event EventData.on_lua_shortcut
+	"things-on_initialized",
+	---@param event things.EventData.on_initialized
 	function(event)
-		local player = game.get_player(event.player_index)
-		if not player then return end
-		if not player.is_cursor_empty() then return end
-		local selected = player.selected
-		if not selected then return end
-		local _, prototype_name = entities_lib.resolve_possible_ghost(selected)
-		if prototype_name ~= "ribbon-cables-mux" then return end
-		local _, thing_id = remote.call("things", "get_status", selected)
-		if not thing_id then
-			debug_log("ribbon-cables-click: not a thing?")
-			return
+		debug_log("RIBBON-CABLES: things-on_initialized: ", event)
+		local entity = event.entity --[[@as LuaEntity?]]
+		if
+			entity
+			and entity.valid
+			and entities_lib.true_prototype_name(entity) == constants.mux_name
+		then
+			get_or_create_multiplexer_state(event.id)
+			debug_log("RIBBON-CABLES: created state ", event.id)
+			local O = orientation_lib.from_data(event.virtual_orientation)
+			if not O then
+				debug_crash("RIBBON-CABLES: failed to decode orientation")
+				return
+			end
+			local _, children = remote.call("things", "get_children", event.id)
+			if not children then
+				debug_crash("RIBBON-CABLES: get_children failed")
+				return
+			end
+			for i = 1, 2 do
+				if not children[i] then
+					local pin_pos = pos_lib.pos_add(
+						pos_lib.pos_new(entity.position),
+						pin_distance,
+						O:local_to_world_offset(pin_offsets[i])
+					)
+					local pin = entity.surface.create_entity({
+						name = constants.pin_name,
+						position = pin_pos,
+						force = entity.force,
+						create_build_effect_smoke = false,
+						raise_built = true,
+					})
+					if not pin then
+						debug_crash("RIBBON-CABLES: failed to create pin")
+						return
+					end
+					local res = remote.call("things", "add_child", entity, i, pin)
+					if res then debug_log("RIBBON-CABLES: add_child failed", res) end
+				else
+					debug_log("RIBBON-CABLES: pin already exists at index ", i)
+				end
+			end
 		end
-		local cursor_stack = player.cursor_stack
-		if not cursor_stack then return end
-		if not cursor_stack.can_set_stack("ribbon-cables-wiring-tool") then
-			return
-		end
-		local state = get_or_create_player_state(event.player_index)
-		-- TODO: use Thing ID here in case ghost state changes
-		state.connection_source = selected
-		cursor_stack.set_stack("ribbon-cables-wiring-tool")
-		-- XXX: debugging
-		local _, tags = remote.call("things", "get_tags", selected)
-		if not tags then tags = { clicker = 0 } end
-		tags.clicker = (tags.clicker or 0) + 1
-		remote.call("things", "set_tags", selected, tags)
 	end
 )
+
+script.on_event(
+	"things-on_orientation_changed",
+	---@param event things.EventData.on_orientation_changed
+	function(event)
+		debug_log("RIBBON-CABLES: things-on_orientation_changed: ", event)
+		local thing_id = event.thing.id
+		local thing_entity = event.thing.entity
+		if not thing_entity or not thing_entity.valid then
+			debug_crash("RIBBON-CABLES: no valid entity for ", thing_id)
+			return
+		end
+		local st = get_multiplexer_state(thing_id)
+		if not st then
+			debug_crash("RIBBON-CABLES: no state for ", thing_id)
+			return
+		end
+		local _, children = remote.call("things", "get_children", thing_id)
+		if not children then
+			debug_crash("RIBBON-CABLES: get_children failed")
+			return
+		end
+		for i = 1, 2 do
+			local child = children[i]
+			if child and child.entity and child.entity.valid then
+				local O = orientation_lib.from_data(event.new_orientation)
+				if not O then
+					debug_crash("RIBBON-CABLES: failed to decode orientation")
+					return
+				end
+				local pin_pos = pos_lib.pos_add(
+					pos_lib.pos_new(thing_entity.position),
+					pin_distance,
+					O:local_to_world_offset(pin_offsets[i])
+				)
+				child.entity.teleport(pin_pos, nil, false, false)
+			else
+				debug_log("RIBBON-CABLES: no pin at index ", i)
+			end
+		end
+	end
+)
+
+script.on_event(
+	"things-on_status_changed",
+	---@param event things.EventData.on_status_changed
+	function(event)
+		if event.new_status == "destroyed" then
+			local st = get_multiplexer_state(event.thing.id)
+			if st then st:destroy() end
+		end
+	end
+)
+
+script.on_event(
+	"things-on_edges_changed",
+	---@param event things.EventData.on_edges_changed
+	function(event)
+		if event.graph_name ~= "ribbon-cables" then return end
+		debug_log("RIBBON-CABLES: things-on_edges_changed: ", event.nodes)
+		for thing_id in pairs(event.nodes) do
+			local st = get_multiplexer_state(thing_id)
+			if st then st:update_connection_render_objects() end
+		end
+	end
+)
+
+-- script.on_event(
+-- 	"ribbon-cables-click",
+-- 	---@param event EventData.on_lua_shortcut
+-- 	function(event)
+-- 		local player = game.get_player(event.player_index)
+-- 		if not player then return end
+-- 		if not player.is_cursor_empty() then return end
+-- 		local selected = player.selected
+-- 		if not selected then return end
+-- 		local _, prototype_name = entities_lib.resolve_possible_ghost(selected)
+-- 		if prototype_name ~= "ribbon-cables-mux" then return end
+-- 		local _, thing_id = remote.call("things", "get_status", selected)
+-- 		if not thing_id then
+-- 			debug_log("ribbon-cables-click: not a thing?")
+-- 			return
+-- 		end
+-- 		local cursor_stack = player.cursor_stack
+-- 		if not cursor_stack then return end
+-- 		if not cursor_stack.can_set_stack("ribbon-cables-wiring-tool") then
+-- 			return
+-- 		end
+-- 		local state = get_or_create_player_state(event.player_index)
+-- 		-- TODO: use Thing ID here in case ghost state changes
+-- 		state.connection_source = selected
+-- 		cursor_stack.set_stack("ribbon-cables-wiring-tool")
+-- 		-- XXX: debugging
+-- 		local _, tags = remote.call("things", "get_tags", selected)
+-- 		if not tags then tags = { clicker = 0 } end
+-- 		tags.clicker = (tags.clicker or 0) + 1
+-- 		remote.call("things", "set_tags", selected, tags)
+-- 	end
+-- )
 
 ---@param player LuaPlayer
 ---@param event EventData.on_player_selected_area
@@ -119,19 +208,21 @@ local function try_complete_connection(player, event)
 	)
 end
 
-script.on_event(defines.events.on_player_selected_area, function(event)
-	local player = game.get_player(event.player_index)
-	if not player then return end
-	debug_log("on_player_selected_area: ", event)
-	local cursor_stack = player.cursor_stack
-	if
-		not cursor_stack
-		or not cursor_stack.valid
-		or not cursor_stack.valid_for_read
-	then
-		return
-	end
-	if cursor_stack.name ~= "ribbon-cables-wiring-tool" then return end
-	try_complete_connection(player, event)
-	player.clear_cursor()
-end)
+-- script.on_event(defines.events.on_player_selected_area, function(event)
+-- 	local player = game.get_player(event.player_index)
+-- 	if not player then return end
+-- 	debug_log("on_player_selected_area: ", event)
+-- 	local cursor_stack = player.cursor_stack
+-- 	if
+-- 		not cursor_stack
+-- 		or not cursor_stack.valid
+-- 		or not cursor_stack.valid_for_read
+-- 	then
+-- 		return
+-- 	end
+-- 	if cursor_stack.name ~= "ribbon-cables-wiring-tool" then return end
+-- 	try_complete_connection(player, event)
+-- 	player.clear_cursor()
+-- end)
+
+require("control.wiring-tool")

@@ -38,9 +38,22 @@ data:extend({
 			entity_filters = { "ribbon-cables-mux" },
 		},
 	},
+	{
+		type = "shortcut",
+		name = "ribbon-cables-wiring-shortcut",
+		icon = "__ribbon-cables__/graphics/icon-jumper-cable.png",
+		icon_size = 256,
+		small_icon = "__ribbon-cables__/graphics/icon-jumper-cable.png",
+		small_icon_size = 256,
+		action = "spawn-item",
+		item_to_spawn = "ribbon-cables-wiring-tool",
+		style = "default",
+	},
 })
 
-data.raw["mod-data"]["things-names"].data["ribbon-cables-mux"] = {}
+data.raw["mod-data"]["things-names"].data["ribbon-cables-mux"] = {
+	virtualize_orientation = true,
+}
 data.raw["mod-data"]["things-names"].data["ribbon-cables-pin"] = {}
 
 data.raw["mod-data"]["things-graphs"].data["ribbon-cables"] = {
