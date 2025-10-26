@@ -6,6 +6,7 @@ local pos_new = pos_lib.pos_new
 local pos_add = pos_lib.pos_add
 local pos_normalize = pos_lib.pos_normalize
 local pos_scale = pos_lib.pos_scale
+local dir_from = pos_lib.dir_from
 
 local lib = {}
 
@@ -97,6 +98,42 @@ end
 
 local BASE_LABELS = { "1", "2", "3", "4", "5", "6", "7", "8" }
 
+local default_dir_orientations = { 0, 0, 0, 0, 0, 0, 0, 0 }
+local default_dir_aligns = {
+	"center",
+	"center",
+	"center",
+	"center",
+	"center",
+	"center",
+	"center",
+	"center",
+}
+local default_dir_offsets = {
+	{ 0, -0.6 },
+	{ 0.15, -0.6 },
+	{ 0.3, -0.3 },
+	{ 0.15, 0 },
+	{ 0, 0 },
+	{ -0.15, 0 },
+	{ -0.3, -0.3 },
+	{ -0.15, -0.6 },
+}
+local custom_dir_orientations =
+	{ 6 / 8, 7 / 8, 0 / 8, 1 / 8, 6 / 8, 7 / 8, 0 / 8, 1 / 8 }
+local custom_dir_aligns =
+	{ "left", "left", "left", "left", "right", "right", "right", "right" }
+local custom_dir_offsets = {
+	{ -0.3, -0.15 },
+	{ -0.15, -0.3 },
+	{ 0.15, -0.3 },
+	{ 0.3, -0.15 },
+	{ -0.3, 0.15 },
+	{ -0.3, -0.15 },
+	{ -0.15, -0.3 },
+	{ 0.15, -0.3 },
+}
+
 ---@param parent things.ThingSummary
 ---@param children things.ThingChildrenSummary?
 function PlayerState:render_pin_labels(parent, children)
@@ -109,26 +146,26 @@ function PlayerState:render_pin_labels(parent, children)
 	if not children then return end
 	local labels = BASE_LABELS
 	if parent.tags and next(parent.tags) then labels = parent.tags end
+
 	self:clear_pin_labels()
 	local ros = {}
 	for index, child in pairs(children) do
 		local entity = child.entity
 		if entity then
+			local text = (labels or BASE_LABELS)[index] or BASE_LABELS[index] or "?"
 			local child_pos = entity.position
-			-- Vector from parent to child
-			local vec = pos_scale(
-				pos_normalize(
-					pos_new(child_pos.x - parent_pos.x, child_pos.y - parent_pos.y)
-				),
-				0.5
-			)
-			pos_add(vec, 1, { 0, -0.25 })
+			local dir = math.floor(dir_from(parent_pos, child_pos) / 2) + 1
+			local orientations = (#text > 1) and custom_dir_orientations
+				or default_dir_orientations
+			local offsets = (#text > 1) and custom_dir_offsets or default_dir_offsets
+			local aligns = (#text > 1) and custom_dir_aligns or default_dir_aligns
 			ros[#ros + 1] = rendering.draw_text({
-				text = (labels or BASE_LABELS)[index] or BASE_LABELS[index] or "?",
+				text = text,
 				surface = entity.surface,
-				target = { entity = entity, offset = vec },
+				target = { entity = entity, offset = offsets[dir] or { 0, 0 } },
+				orientation = orientations[dir] or 0,
 				color = { r = 1, g = 1, b = 0 },
-				alignment = "center",
+				alignment = aligns[dir] or "center",
 				players = { self.player_index },
 				use_rich_text = true,
 			})
