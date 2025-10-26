@@ -1,4 +1,5 @@
 local event = require("lib.core.event")
+local strace = require("lib.core.strace")
 
 ---@param player LuaPlayer
 ---@param target_thing things.ThingSummary
@@ -11,25 +12,44 @@ local function toggle_connection(player, target_thing, player_state)
 		or not source_thing.entity
 		or not source_thing.entity.valid
 	then
+		strace.warn("Cannot find source thing", player_state.connection_source)
 		player_state.connection_source = nil
 		player.clear_cursor()
 		return
 	end
 
-	local _, res = remote.call(
+	strace.trace(
+		"Toggling connection from thing",
+		source_thing.id,
+		"to thing",
+		target_thing.id,
+		"for player",
+		player.index
+	)
+	local err, res = remote.call(
 		"things",
 		"modify_edge",
 		"ribbon-cables",
+		"toggle",
 		source_thing.id,
-		target_thing.id,
-		"toggle"
+		target_thing.id
 	)
+	if err then
+		strace.error(
+			"Error toggling connection from thing",
+			source_thing.id,
+			"to thing",
+			target_thing.id,
+			":",
+			err
+		)
+	end
 	if res == true then
 		-- Connection was added
-		player_state.connection_source = target_thing.id
+		player_state:set_connection_source(target_thing.id)
 	else
 		-- Connection was removed
-		player_state.connection_source = nil
+		player_state:clear_connection()
 	end
 end
 
@@ -52,13 +72,19 @@ local function selected_with_wiring_tool(player, thing, player_state)
 				{ "ribbon-cables.error-cannot-connect-to-self" },
 				{ skip = defines.print_skip.never, sound = defines.print_sound.always }
 			)
-			player_state.connection_source = nil
+			player_state:clear_connection()
 			player.clear_cursor()
 			return
 		end
 		return toggle_connection(player, thing, player_state)
 	else
-		player_state.connection_source = thing.id
+		strace.trace(
+			"Setting connection source to thing",
+			thing.id,
+			"for player",
+			player.index
+		)
+		player_state:set_connection_source(thing.id)
 	end
 end
 
@@ -91,7 +117,7 @@ event.bind(
 
 		local target = ev.entities[1]
 		local _, thing = remote.call("things", "get", target)
-		if not thing then
+		if not thing or thing.name ~= "ribbon-cables-mux" then
 			player.print(
 				{ "ribbon-cables.error-select-valid-entity" },
 				{ skip = defines.print_skip.never, sound = defines.print_sound.always }
@@ -110,5 +136,52 @@ event.bind("ribbon-cables-linked-clear-cursor", function(ev)
 	local player = game.get_player(ev.player_index)
 	if not player then return end
 	local state = get_player_state(ev.player_index)
-	if state then state.connection_source = nil end
+	if state then state:clear_connection() end
 end)
+
+-- Cursor select. Render a hypothetical edge.
+event.bind(
+	defines.events.on_selected_entity_changed,
+	---@param ev EventData.on_selected_entity_changed
+	function(ev)
+		local player = game.get_player(ev.player_index)
+		local player_state = get_player_state(ev.player_index)
+		if not player or not player_state or not player_state.connection_source then
+			return
+		end
+		local selected = player.selected
+		player_state:clear_possible_connection_rendering()
+		if not selected then return end
+		local _, selected_thing = remote.call("things", "get", selected)
+		if
+			not selected_thing
+			or selected_thing.name ~= "ribbon-cables-mux"
+			or selected_thing.id == player_state.connection_source
+		then
+			return
+		end
+		local _, origin_thing =
+			remote.call("things", "get", player_state.connection_source)
+		if not origin_thing then return end
+		local will_connect = true
+		local _, edge = remote.call(
+			"things",
+			"get_edge",
+			"ribbon-cables",
+			player_state.connection_source,
+			selected_thing.id
+		)
+		if edge then will_connect = false end
+		if will_connect then
+			player_state:render_possible_connection(
+				origin_thing.entity,
+				selected_thing.entity
+			)
+		else
+			player_state:render_possible_disconnection(
+				origin_thing.entity,
+				selected_thing.entity
+			)
+		end
+	end
+)

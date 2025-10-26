@@ -8,7 +8,7 @@ local pin_sprite = {
 	filename = "__ribbon-cables__/graphics/circle.png",
 	size = 32,
 	scale = 0.125,
-	tint = { 1, 0.5, 0, 1 }, -- orange
+	tint = { 1, 1, 1, 1 },
 }
 
 ---@type data.ContainerPrototype
@@ -21,7 +21,7 @@ local pin = {
 	-- ContainerPrototype
 	inventory_size = 0,
 	picture = pin_sprite,
-	circuit_wire_max_distance = constants.pin_circuit_wire_max_distance,
+	circuit_wire_max_distance = constants.circuit_wire_max_distance,
 	draw_copper_wires = false,
 	draw_circuit_wires = true,
 

@@ -1,5 +1,4 @@
----@class ribbon_cables.PlayerState
----@field connection_source? int64 ID of the Thing selected as source for a connection
+local ps_lib = require("control.player-state")
 
 ---@class ribbon_cables.Storage
 ---@field players {[uint]: ribbon_cables.PlayerState}
@@ -11,7 +10,7 @@ storage = {}
 function _G.get_or_create_player_state(player_index)
 	if not storage.players then storage.players = {} end
 	if not storage.players[player_index] then
-		storage.players[player_index] = {}
+		storage.players[player_index] = ps_lib.PlayerState:new(player_index)
 	end
 	return storage.players[player_index]
 end
