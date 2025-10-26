@@ -16,7 +16,7 @@ data:extend({
 	{
 		type = "custom-input",
 		name = "ribbon-cables-click",
-		key_sequence = "mouse-button-3",
+		key_sequence = "mouse-button-1",
 	},
 	{
 		type = "custom-input",

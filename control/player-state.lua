@@ -95,6 +95,8 @@ function PlayerState:clear_pin_labels()
 	self.pin_labels = nil
 end
 
+local BASE_LABELS = { "1", "2", "3", "4", "5", "6", "7", "8" }
+
 ---@param parent things.ThingSummary
 ---@param children things.ThingChildrenSummary?
 function PlayerState:render_pin_labels(parent, children)
@@ -105,6 +107,8 @@ function PlayerState:render_pin_labels(parent, children)
 		_, children = remote.call("things", "get_children", parent.id)
 	end
 	if not children then return end
+	local labels = BASE_LABELS
+	if parent.tags and next(parent.tags) then labels = parent.tags end
 	self:clear_pin_labels()
 	local ros = {}
 	for index, child in pairs(children) do
@@ -120,12 +124,13 @@ function PlayerState:render_pin_labels(parent, children)
 			)
 			pos_add(vec, 1, { 0, -0.25 })
 			ros[#ros + 1] = rendering.draw_text({
-				text = tostring(index),
+				text = (labels or BASE_LABELS)[index] or BASE_LABELS[index] or "?",
 				surface = entity.surface,
 				target = { entity = entity, offset = vec },
 				color = { r = 1, g = 1, b = 0 },
 				alignment = "center",
 				players = { self.player_index },
+				use_rich_text = true,
 			})
 		end
 	end

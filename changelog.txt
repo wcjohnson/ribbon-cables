@@ -8,3 +8,10 @@ Version: 0.1.1
 Date: 2025-10-26
   Changes:
     - Fixed mod portal thumbnail image.
+---------------------------------------------------------------------------------------------------
+Version: 0.1.2
+Date: 2025-10-26
+  Bugfixes:
+    - Fixed an issue where clicking on pins would incorrectly show the container GUI.
+  Features:
+    - Added custom pin labels.
