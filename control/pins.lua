@@ -91,6 +91,8 @@ end
 ---@param neighbor_id uint64?
 local function connect_one_neighbor(my_pins, neighbor_id)
 	if not my_pins or not neighbor_id then return end
+	local _, neighbor = remote.call("things", "get", neighbor_id)
+	if not neighbor or neighbor.status ~= "real" then return end
 	local _, neighbor_pins = remote.call("things", "get_children", neighbor_id)
 	connect_each_pin(my_pins, neighbor_pins)
 end
@@ -161,6 +163,7 @@ event.bind(
 			)
 		end
 		if mux then mux:update_connection_render_objects() end
+		-- NOTE: on_children_normalized handles neighbor connection on creation
 	end
 )
 
@@ -193,7 +196,12 @@ event.bind(
 		if mux then mux:update_connection_render_objects() end
 		entity, mux = get_mux_info(ev.to, false)
 		if mux then mux:update_connection_render_objects() end
-		if ev.change == "create" then
+		if
+			ev.change == "create"
+			and ev.from.status == "real"
+			and ev.to.status == "real"
+		then
+			-- Connection between nonghost = connect pins
 			connect_one_neighbor(pins, ev.to.id)
 		elseif ev.change == "delete" then
 			disconnect_one_neighbor(pins, ev.to.id)
