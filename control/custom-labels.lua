@@ -154,7 +154,7 @@ relm.define_element({
 				local labels = {}
 				for i = 1, 8 do
 					local label = new_labels[i]
-					if label and label ~= "" then labels[i] = label end
+					if label and label ~= "" then labels[tostring(i)] = label end
 				end
 				remote.call("things", "set_tags", props.thing_id, { labels = labels })
 			end

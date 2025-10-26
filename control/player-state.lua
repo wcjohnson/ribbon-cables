@@ -153,9 +153,13 @@ function PlayerState:render_pin_labels(parent, children)
 	self:clear_pin_labels()
 	local ros = {}
 	for index, child in pairs(children) do
+		local strindex = tostring(index)
 		local entity = child.entity
 		if entity then
-			local text = (labels or BASE_LABELS)[index] or BASE_LABELS[index] or "?"
+			local text = labels[strindex]
+				or labels[index]
+				or BASE_LABELS[index]
+				or "?"
 			local child_pos = entity.position
 			local dir = math.floor(dir_from(parent_pos, child_pos) / 2) + 1
 			local orientations = (#text > 1) and custom_dir_orientations
