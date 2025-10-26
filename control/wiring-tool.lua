@@ -1,5 +1,10 @@
 local event = require("lib.core.event")
 local strace = require("lib.core.strace")
+local constants = require("lib.constants")
+local pos_lib = require("lib.core.math.pos")
+
+local MAX_DISTANCE = constants.ribbon_cable_max_distance
+local MAX_DISTSQ = MAX_DISTANCE * MAX_DISTANCE
 
 ---@param player LuaPlayer
 ---@param target_thing things.ThingSummary
@@ -7,13 +12,23 @@ local strace = require("lib.core.strace")
 local function toggle_connection(player, target_thing, player_state)
 	local _, source_thing =
 		remote.call("things", "get", player_state.connection_source)
-	if
-		not source_thing
-		or not source_thing.entity
-		or not source_thing.entity.valid
-	then
+	if not source_thing or not source_thing.entity then
 		strace.warn("Cannot find source thing", player_state.connection_source)
 		player_state.connection_source = nil
+		player.clear_cursor()
+		return
+	end
+
+	local source_entity = source_thing.entity --[[@as LuaEntity]]
+	local target_entity = target_thing.entity --[[@as LuaEntity]]
+	local distsq =
+		pos_lib.pos_distsq(source_entity.position, target_entity.position)
+	if distsq > MAX_DISTSQ then
+		player.print(
+			{ "ribbon-cables.error-too-far" },
+			{ skip = defines.print_skip.never, sound = defines.print_sound.always }
+		)
+		player_state:clear_connection()
 		player.clear_cursor()
 		return
 	end
@@ -162,7 +177,7 @@ event.bind(
 		end
 		local _, origin_thing =
 			remote.call("things", "get", player_state.connection_source)
-		if not origin_thing then return end
+		if not origin_thing or not origin_thing.entity then return end
 		local will_connect = true
 		local _, edge = remote.call(
 			"things",
@@ -172,6 +187,14 @@ event.bind(
 			selected_thing.id
 		)
 		if edge then will_connect = false end
+		if
+			pos_lib.pos_distsq(
+				origin_thing.entity.position,
+				selected_thing.entity.position
+			) > MAX_DISTSQ
+		then
+			will_connect = false
+		end
 		if will_connect then
 			player_state:render_possible_connection(
 				origin_thing.entity,

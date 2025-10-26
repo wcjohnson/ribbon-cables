@@ -2,11 +2,6 @@
 
 local event = require("lib.core.event")
 local strace = require("lib.core.strace")
-local ws_lib = require("lib.core.world-state")
-
-local get_world_key = ws_lib.get_world_key
-local get_world_state = ws_lib.get_world_state
-local find_matching = ws_lib.find_matching
 
 ---@param pin LuaEntity?
 local function disconnect_one_pin_entirely(pin)
