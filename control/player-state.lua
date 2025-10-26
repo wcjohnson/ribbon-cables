@@ -55,6 +55,7 @@ local PC_CIRCLE_WIDTH = 2
 ---@param to LuaEntity
 ---@param color Color?
 function PlayerState:render_possible_connection(from, to, color)
+	self:clear_possible_connection_rendering()
 	color = color or { r = 0, g = 1, b = 0 }
 	local ros = {}
 	ros[#ros + 1] = rendering.draw_line({
@@ -104,6 +105,7 @@ function PlayerState:render_pin_labels(parent, children)
 		_, children = remote.call("things", "get_children", parent.id)
 	end
 	if not children then return end
+	self:clear_pin_labels()
 	local ros = {}
 	for index, child in pairs(children) do
 		local entity = child.entity

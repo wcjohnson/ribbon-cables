@@ -8,13 +8,9 @@ data:extend({
 	{ type = "custom-event", name = "ribbon-cables-on_initialized" },
 	{ type = "custom-event", name = "ribbon-cables-on_status" },
 	{ type = "custom-event", name = "ribbon-cables-on_edge_status" },
-	{ type = "custom-event", name = "ribbon-cables-on_tags_changed" },
 	{ type = "custom-event", name = "ribbon-cables-on_edge_changed" },
 	{ type = "custom-event", name = "ribbon-cables-on_orientation_changed" },
-	{ type = "custom-event", name = "ribbon-cables-on_parent_status" },
 	{ type = "custom-event", name = "ribbon-cables-on_children_normalized" },
-	{ type = "custom-event", name = "ribbon-cables-pin-on_status" },
-	{ type = "custom-event", name = "ribbon-cables-pin-on_parent_status" },
 	{
 		type = "custom-input",
 		name = "ribbon-cables-click",
@@ -63,51 +59,54 @@ data:extend({
 	},
 })
 
+local PIN_OFFSET = 0.4
+
 ---@type things.ThingRegistration
 local mux_registration = {
 	name = "ribbon-cables-mux",
 	intercept_construction = true,
-	-- virtualize_orientation = oc_lib.OrientationClass.OC_048CM_RF,
+	virtualize_orientation = oc_lib.OrientationClass.OC_048CM_RF,
 	custom_events = {
 		on_initialized = "ribbon-cables-on_initialized",
 		on_status = "ribbon-cables-on_status",
 		on_edge_status = "ribbon-cables-on_edge_status",
 		on_children_normalized = "ribbon-cables-on_children_normalized",
+		on_orientation_changed = "ribbon-cables-on_orientation_changed",
 	},
-	-- children = {
-	-- 	[1] = {
-	-- 		create = { name = "ribbon-cables-pin", position = { 0, 0 } },
-	-- 		offset = { 0, -0.4 },
-	-- 	},
-	-- 	[2] = {
-	-- 		create = { name = "ribbon-cables-pin", position = { 0, 0 } },
-	-- 		offset = { 0.4, -0.4 },
-	-- 	},
-	-- 	[3] = {
-	-- 		create = { name = "ribbon-cables-pin", position = { 0, 0 } },
-	-- 		offset = { 0.4, 0 },
-	-- 	},
-	-- 	[4] = {
-	-- 		create = { name = "ribbon-cables-pin", position = { 0, 0 } },
-	-- 		offset = { 0.4, 0.4 },
-	-- 	},
-	-- 	[5] = {
-	-- 		create = { name = "ribbon-cables-pin", position = { 0, 0 } },
-	-- 		offset = { 0, 0.4 },
-	-- 	},
-	-- 	[6] = {
-	-- 		create = { name = "ribbon-cables-pin", position = { 0, 0 } },
-	-- 		offset = { -0.4, 0.4 },
-	-- 	},
-	-- 	[7] = {
-	-- 		create = { name = "ribbon-cables-pin", position = { 0, 0 } },
-	-- 		offset = { -0.4, 0 },
-	-- 	},
-	-- 	[8] = {
-	-- 		create = { name = "ribbon-cables-pin", position = { 0, 0 } },
-	-- 		offset = { -0.4, -0.4 },
-	-- 	},
-	-- },
+	children = {
+		[1] = {
+			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
+			offset = { 0, -PIN_OFFSET },
+		},
+		[2] = {
+			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
+			offset = { PIN_OFFSET, -PIN_OFFSET },
+		},
+		[3] = {
+			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
+			offset = { PIN_OFFSET, 0 },
+		},
+		[4] = {
+			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
+			offset = { PIN_OFFSET, PIN_OFFSET },
+		},
+		[5] = {
+			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
+			offset = { 0, PIN_OFFSET },
+		},
+		[6] = {
+			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
+			offset = { -PIN_OFFSET, PIN_OFFSET },
+		},
+		[7] = {
+			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
+			offset = { -PIN_OFFSET, 0 },
+		},
+		[8] = {
+			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
+			offset = { -PIN_OFFSET, -PIN_OFFSET },
+		},
+	},
 }
 data.raw["mod-data"]["things-names"].data["ribbon-cables-mux"] =
 	mux_registration

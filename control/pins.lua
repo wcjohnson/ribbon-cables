@@ -255,3 +255,21 @@ event.bind(
 		player_state:render_pin_labels(selected_thing, nil)
 	end
 )
+
+-- When mux orientation changes, pin labels need to be redrawn for all players
+-- that have them shown.
+event.bind(
+	"ribbon-cables-on_orientation_changed",
+	---@param ev things.EventData.on_orientation_changed
+	function(ev)
+		strace.trace("ribbon-cables-on_orientation_changed", ev)
+		local entity = ev.thing.entity
+		if not entity then return end
+		for _, player in pairs(game.connected_players) do
+			if player.selected == entity then
+				local player_state = get_or_create_player_state(player.index)
+				if player_state then player_state:render_pin_labels(ev.thing, nil) end
+			end
+		end
+	end
+)

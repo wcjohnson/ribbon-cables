@@ -33,8 +33,8 @@ local mux = {
 	corpse = "medium-remnants",
 
 	-- EntityPrototype
-	icon = "__ribbon-cables__/graphics/icon-jumper-cable.png",
-	icon_size = 256,
+	icon = "__ribbon-cables__/graphics/mux-icon-128.png",
+	icon_size = 128,
 	collision_box = { { -0.45, -0.45 }, { 0.45, 0.45 } },
 	collision_mask = {
 		layers = {
@@ -63,8 +63,8 @@ local item = {
 
 	-- ItemPrototype
 	stack_size = 50,
-	icon = "__ribbon-cables__/graphics/icon-jumper-cable.png",
-	icon_size = 256,
+	icon = "__ribbon-cables__/graphics/mux-icon-128.png",
+	icon_size = 128,
 	order = "m",
 	subgroup = "circuit-network",
 }

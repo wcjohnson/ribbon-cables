@@ -23,7 +23,7 @@ local mux_technology = {
 	type = "technology",
 	name = constants.tech_name,
 	icon_size = 128,
-	icon = "__ribbon-cables__/graphics/icon-jumper-cable.png",
+	icon = "__ribbon-cables__/graphics/mux-icon-128.png",
 	effects = {
 		{ type = "unlock-recipe", recipe = constants.mux_name },
 	},
