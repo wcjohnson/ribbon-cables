@@ -1,6 +1,5 @@
 # Ribbon Cables
 
-**NOTE: This mod is currently in an ALPHA state. You have been warned!**
 
 Ribbon cables multiplex 16 circuit network wires (8 red, 8 green) using 1x1 entities that connect to each other using a customized cable network. This allows you to:
 
@@ -15,21 +14,21 @@ Ribbon cables multiplex 16 circuit network wires (8 red, 8 green) using 1x1 enti
 1) Research the "Ribbon Cables" tech and craft two Multiplexers from the researched recipe.
 2) Place them in the world, like so:
 
-![Image](https://raw.githubusercontent.com/project-cybersyn/things/main/doc/place-multiplexers.png)
+![Image](https://raw.githubusercontent.com/wcjohnson/ribbon-cables/main/doc/place-multiplexers.png)
 
 3) Find the Ribbon Cable Connection Tool in your toolbox:
 
-![Image](https://raw.githubusercontent.com/project-cybersyn/things/main/doc/tool-in-toolbar.png)
+![Image](https://raw.githubusercontent.com/wcjohnson/ribbon-cables/main/doc/tool-in-toolbar.png)
 
 4) Create a connection between your two placed Multiplexers, just as you would a circuit wire:
 
-![Image](https://raw.githubusercontent.com/project-cybersyn/things/main/doc/connecting.png)
+![Image](https://raw.githubusercontent.com/wcjohnson/ribbon-cables/main/doc/connecting.png)
 
-![Image](https://raw.githubusercontent.com/project-cybersyn/things/main/doc/connected.png)
+![Image](https://raw.githubusercontent.com/wcjohnson/ribbon-cables/main/doc/connected.png)
 
 5) You're done! Devices connected to corresponding pins on your multiplexers are now all on the same circuit.
 
-![Image](https://raw.githubusercontent.com/project-cybersyn/things/main/doc/operational.png)
+![Image](https://raw.githubusercontent.com/wcjohnson/ribbon-cables/main/doc/operational.png)
 
 You can build any size network of Multiplexers and they will all mutually connect. The pins are connected by number; to see corresponding pin numbers, just mouse over the Multiplexer.
 
