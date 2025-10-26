@@ -31,24 +31,8 @@ function Multiplexer:update_connection_render_objects()
 	if not self_entity or not self_entity.valid then return end
 	local _, out_edges, in_edges =
 		remote.call("things", "get_edges", "ribbon-cables", self.thing_id)
-	if
-		not out_edges
-		or not in_edges
-		or (not next(out_edges) and not next(in_edges))
-	then
-		return
-	end
-	-- Render emanation circle
-	table.insert(
-		render_objects,
-		rendering.draw_circle({
-			color = { r = 0, g = 1, b = 1, a = 1 },
-			radius = 0.25,
-			filled = true,
-			target = self_entity,
-			surface = self_entity.surface,
-		})
-	)
+	if not out_edges or not in_edges then return end
+
 	strace.trace("Thing", self.thing_id, "is rendering edges", out_edges)
 	for dst_id, edge in pairs(out_edges) do
 		local _, dst_thing = remote.call("things", "get", dst_id)
@@ -58,6 +42,18 @@ function Multiplexer:update_connection_render_objects()
 			and dst_entity.valid
 			and dst_entity.surface == self_entity.surface
 		then
+			-- Render emanation circle
+			table.insert(
+				render_objects,
+				rendering.draw_circle({
+					color = { r = 0, g = 1, b = 1, a = 1 },
+					radius = 0.25,
+					filled = true,
+					target = self_entity,
+					surface = self_entity.surface,
+				})
+			)
+			-- Render connection line
 			table.insert(
 				render_objects,
 				rendering.draw_line({
@@ -66,6 +62,17 @@ function Multiplexer:update_connection_render_objects()
 					from = self_entity,
 					to = dst_entity,
 					surface = self_entity.surface,
+				})
+			)
+			-- Render emanation circle
+			table.insert(
+				render_objects,
+				rendering.draw_circle({
+					color = { r = 0, g = 1, b = 1, a = 1 },
+					radius = 0.25,
+					filled = true,
+					target = dst_entity,
+					surface = dst_entity.surface,
 				})
 			)
 		end
