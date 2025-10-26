@@ -33,137 +33,17 @@ strace.set_handler(function(level, ...)
 end)
 
 local entities_lib = require("lib.core.entities")
-local pos_lib = require("lib.core.math.pos")
-local constants = require("lib.constants")
-local orientation_lib = require("lib.core.orientation.orientation")
-local events = require("lib.core.event")
 
 require("control.multiplexer")
 require("control.storage")
 
+require("control.pins")
+require("control.wiring-tool")
+require("control.undo-wire-fix")
+
 -- Enable support for the Global Variable Viewer debugging mod, if it is
 -- installed.
 if script.active_mods["gvv"] then require("__gvv__.gvv")() end
-
--- script.on_event(
--- 	"things-on_initialized",
--- 	---@param event things.EventData.on_initialized
--- 	function(event)
--- 		debug_log("RIBBON-CABLES: things-on_initialized: ", event)
--- 		local entity = event.entity --[[@as LuaEntity?]]
--- 		if
--- 			entity
--- 			and entity.valid
--- 			and entities_lib.true_prototype_name(entity) == constants.mux_name
--- 		then
--- 			get_or_create_multiplexer_state(event.id)
--- 			debug_log("RIBBON-CABLES: created state ", event.id)
--- 			local O = orientation_lib.from_data(event.virtual_orientation)
--- 			if not O then
--- 				debug_crash("RIBBON-CABLES: failed to decode orientation")
--- 				return
--- 			end
--- 			local _, children = remote.call("things", "get_children", event.id)
--- 			if not children then
--- 				debug_crash("RIBBON-CABLES: get_children failed")
--- 				return
--- 			end
--- 			for i = 1, 2 do
--- 				if not children[i] then
--- 					local pin_pos = pos_lib.pos_add(
--- 						pos_lib.pos_new(entity.position),
--- 						pin_distance,
--- 						O:local_to_world_offset(pin_offsets[i])
--- 					)
--- 					local pin = entity.surface.create_entity({
--- 						name = constants.pin_name,
--- 						position = pin_pos,
--- 						force = entity.force,
--- 						create_build_effect_smoke = false,
--- 						raise_built = true,
--- 					})
--- 					if not pin then
--- 						debug_crash("RIBBON-CABLES: failed to create pin")
--- 						return
--- 					end
--- 					local res = remote.call("things", "add_child", entity, i, pin)
--- 					if res then debug_log("RIBBON-CABLES: add_child failed", res) end
--- 				else
--- 					debug_log("RIBBON-CABLES: pin already exists at index ", i)
--- 				end
--- 			end
--- 		end
--- 	end
--- )
-
--- script.on_event(
--- 	"things-on_orientation_changed",
--- 	---@param event things.EventData.on_orientation_changed
--- 	function(event)
--- 		debug_log("RIBBON-CABLES: things-on_orientation_changed: ", event)
--- 		local thing_id = event.thing.id
--- 		local thing_entity = event.thing.entity
--- 		if not thing_entity or not thing_entity.valid then
--- 			debug_crash("RIBBON-CABLES: no valid entity for ", thing_id)
--- 			return
--- 		end
--- 		local st = get_multiplexer_state(thing_id)
--- 		if not st then
--- 			debug_crash("RIBBON-CABLES: no state for ", thing_id)
--- 			return
--- 		end
--- 		local _, children = remote.call("things", "get_children", thing_id)
--- 		if not children then
--- 			debug_crash("RIBBON-CABLES: get_children failed")
--- 			return
--- 		end
--- 		for i = 1, 2 do
--- 			local child = children[i]
--- 			if child and child.entity and child.entity.valid then
--- 				local O = orientation_lib.from_data(event.new_orientation)
--- 				if not O then
--- 					debug_crash("RIBBON-CABLES: failed to decode orientation")
--- 					return
--- 				end
--- 				local pin_pos = pos_lib.pos_add(
--- 					pos_lib.pos_new(thing_entity.position),
--- 					pin_distance,
--- 					O:local_to_world_offset(pin_offsets[i])
--- 				)
--- 				child.entity.teleport(pin_pos, nil, false, false)
--- 			else
--- 				debug_log("RIBBON-CABLES: no pin at index ", i)
--- 			end
--- 		end
--- 	end
--- )
-
--- events.bind(
--- 	"ribbon-cables-on_status_changed",
--- 	---@param event things.EventData.on_status
--- 	function(event)
--- 		if event.new_status == "destroyed" then
--- 			local st = get_multiplexer_state(event.thing.id)
--- 			if st then st:destroy() end
--- 		end
--- 	end
--- )
-
--- events.bind(
--- 	"ribbon-cables-on_edges_changed",
--- 	---@param event things.EventData.on_edges_changed
--- 	function(event)
--- 		if event.graph_name ~= "ribbon-cables" then return end
--- 		debug_log("RIBBON-CABLES: things-on_edges_changed: ", event.nodes)
--- 		for thing_id in pairs(event.nodes) do
--- 			local st = get_multiplexer_state(thing_id)
--- 			if st then st:update_connection_render_objects() end
--- 		end
--- 	end
--- )
-
-require("control.pins")
-require("control.wiring-tool")
 
 script.on_event(
 	"ribbon-cables-click",
