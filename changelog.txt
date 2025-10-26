@@ -21,3 +21,8 @@ Date: 2025-10-26
   Changes:
     - Improved pin label rendering to avoid overlap and enhance visibility.
     - Bumped Things dependency to pick up needed API changes.
+---------------------------------------------------------------------------------------------------
+Version: 0.1.4
+Date: 2025-10-26
+  Bugfixes:
+    - Fixed an issue with serialization of custom pin labels to blueprints.

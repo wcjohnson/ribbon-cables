@@ -109,35 +109,59 @@ relm.define_element({
 				ultros.gather({
 					ultros.tag(
 						1,
-						RibbonCablesLabelRow({ index = 1, label = state[1] or "" })
+						RibbonCablesLabelRow({
+							index = 1,
+							label = state[1] or state["1"] or "",
+						})
 					),
 					ultros.tag(
 						2,
-						RibbonCablesLabelRow({ index = 2, label = state[2] or "" })
+						RibbonCablesLabelRow({
+							index = 2,
+							label = state[2] or state["2"] or "",
+						})
 					),
 					ultros.tag(
 						3,
-						RibbonCablesLabelRow({ index = 3, label = state[3] or "" })
+						RibbonCablesLabelRow({
+							index = 3,
+							label = state[3] or state["3"] or "",
+						})
 					),
 					ultros.tag(
 						4,
-						RibbonCablesLabelRow({ index = 4, label = state[4] or "" })
+						RibbonCablesLabelRow({
+							index = 4,
+							label = state[4] or state["4"] or "",
+						})
 					),
 					ultros.tag(
 						5,
-						RibbonCablesLabelRow({ index = 5, label = state[5] or "" })
+						RibbonCablesLabelRow({
+							index = 5,
+							label = state[5] or state["5"] or "",
+						})
 					),
 					ultros.tag(
 						6,
-						RibbonCablesLabelRow({ index = 6, label = state[6] or "" })
+						RibbonCablesLabelRow({
+							index = 6,
+							label = state[6] or state["6"] or "",
+						})
 					),
 					ultros.tag(
 						7,
-						RibbonCablesLabelRow({ index = 7, label = state[7] or "" })
+						RibbonCablesLabelRow({
+							index = 7,
+							label = state[7] or state["7"] or "",
+						})
 					),
 					ultros.tag(
 						8,
-						RibbonCablesLabelRow({ index = 8, label = state[8] or "" })
+						RibbonCablesLabelRow({
+							index = 8,
+							label = state[8] or state["8"] or "",
+						})
 					),
 				}),
 			}),
