@@ -151,12 +151,12 @@ relm.define_element({
 		elseif payload.key == "save" then
 			local _, new_labels = relm.query_broadcast(me, { key = "value" })
 			if new_labels then
-				local tags = {}
+				local labels = {}
 				for i = 1, 8 do
 					local label = new_labels[i]
-					if label and label ~= "" then tags[i] = label end
+					if label and label ~= "" then labels[i] = label end
 				end
-				remote.call("things", "set_tags", props.thing_id, tags)
+				remote.call("things", "set_tags", props.thing_id, { labels = labels })
 			end
 			close_gui(props.player_index)
 			return true
@@ -165,7 +165,7 @@ relm.define_element({
 	end,
 	state = function(props)
 		local _, thing = remote.call("things", "get", props.thing_id)
-		if not thing or not thing.tags then return {} end
-		return thing.tags
+		if not thing or not thing.tags or not thing.tags.labels then return {} end
+		return thing.tags.labels
 	end,
 })

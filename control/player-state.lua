@@ -1,6 +1,7 @@
 local class = require("lib.core.class").class
 local ovl_lib = require("lib.core.overlay")
 local pos_lib = require("lib.core.math.pos")
+local strace = require("lib.core.strace")
 
 local pos_new = pos_lib.pos_new
 local pos_add = pos_lib.pos_add
@@ -145,7 +146,9 @@ function PlayerState:render_pin_labels(parent, children)
 	end
 	if not children then return end
 	local labels = BASE_LABELS
-	if parent.tags and next(parent.tags) then labels = parent.tags end
+	if parent.tags and parent.tags.labels then
+		labels = parent.tags.labels --[[@as table]]
+	end
 
 	self:clear_pin_labels()
 	local ros = {}
