@@ -285,3 +285,24 @@ event.bind(
 		end
 	end
 )
+
+--------------------------------------------------------------------------------
+-- SUPPRESS CONTAINER GUI
+-- If a pin is clicked, close the resulting container GUI.
+--------------------------------------------------------------------------------
+
+event.bind(
+	defines.events.on_gui_opened,
+	---@param ev EventData.on_gui_opened
+	function(ev)
+		if ev.gui_type ~= defines.gui_type.entity then return end
+		local entity = ev.entity
+		if not entity then return end
+		local player = game.get_player(ev.player_index)
+		if not player then return end
+		local name = entity.type == "entity-ghost" and entity.ghost_name
+			or entity.name
+		if name ~= "ribbon-cables-pin" then return end
+		player.opened = nil
+	end
+)
