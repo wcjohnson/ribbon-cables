@@ -1,5 +1,6 @@
 # Ribbon Cables
 
+**This mod is currently in Alpha testing. All functionality is implemented, but bugs may be present. Beware!**
 
 Ribbon cables multiplex 16 circuit network wires (8 red, 8 green) using 1x1 entities that connect to each other using a customized cable network. This allows you to:
 
@@ -31,6 +32,11 @@ Ribbon cables multiplex 16 circuit network wires (8 red, 8 green) using 1x1 enti
 ![Image](https://raw.githubusercontent.com/wcjohnson/ribbon-cables/main/doc/operational.png)
 
 You can build any size network of Multiplexers and they will all mutually connect. The pins are connected by number; to see corresponding pin numbers, just mouse over the Multiplexer.
+
+## Credits
+
+- **hgschmie** for the excellent Fiber Optics mod which inspired this mod. My main problem with Fiber Optics was its use of the electrical network, hence the custom ribbon cable network introduced in this mod.
+- The **Things library** for making this mod 100x easier to build.
 
 ## Contributing
 
