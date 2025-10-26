@@ -11,6 +11,8 @@ data:extend({
 	{ type = "custom-event", name = "ribbon-cables-on_edge_changed" },
 	{ type = "custom-event", name = "ribbon-cables-on_orientation_changed" },
 	{ type = "custom-event", name = "ribbon-cables-on_children_normalized" },
+	{ type = "custom-event", name = "ribbon-cables-on_pin_status" },
+	{ type = "custom-event", name = "ribbon-cables-on_pin_immediate_voided" },
 	{
 		type = "custom-input",
 		name = "ribbon-cables-click",
@@ -116,6 +118,11 @@ local pin_registration = {
 	name = "ribbon-cables-pin",
 	intercept_construction = false,
 	no_garbage_collection = true,
+	allow_in_cursor = "never",
+	custom_events = {
+		on_status = "ribbon-cables-on_pin_status",
+		on_immediate_voided = "ribbon-cables-on_pin_immediate_voided",
+	},
 }
 data.raw["mod-data"]["things-names"].data["ribbon-cables-pin"] =
 	pin_registration
