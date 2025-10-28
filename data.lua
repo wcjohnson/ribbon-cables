@@ -79,34 +79,42 @@ local mux_registration = {
 		[1] = {
 			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
 			offset = { 0, -PIN_OFFSET },
+			lifecycle_type = "real-real",
 		},
 		[2] = {
 			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
 			offset = { PIN_OFFSET, -PIN_OFFSET },
+			lifecycle_type = "real-real",
 		},
 		[3] = {
 			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
 			offset = { PIN_OFFSET, 0 },
+			lifecycle_type = "real-real",
 		},
 		[4] = {
 			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
 			offset = { PIN_OFFSET, PIN_OFFSET },
+			lifecycle_type = "real-real",
 		},
 		[5] = {
 			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
 			offset = { 0, PIN_OFFSET },
+			lifecycle_type = "real-real",
 		},
 		[6] = {
 			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
 			offset = { -PIN_OFFSET, PIN_OFFSET },
+			lifecycle_type = "real-real",
 		},
 		[7] = {
 			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
 			offset = { -PIN_OFFSET, 0 },
+			lifecycle_type = "real-real",
 		},
 		[8] = {
 			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
 			offset = { -PIN_OFFSET, -PIN_OFFSET },
+			lifecycle_type = "real-real",
 		},
 	},
 }
