@@ -124,6 +124,9 @@ data.raw["mod-data"]["things-names"].data["ribbon-cables-mux"] =
 ---@type things.ThingRegistration
 local pin_registration = {
 	name = "ribbon-cables-pin",
+	custom_blueprint_geometry = {
+		[0] = { -0.3, -0.3, 0.09, 0.09 },
+	},
 	intercept_construction = false,
 	no_garbage_collection = true,
 	allow_in_cursor = "never",

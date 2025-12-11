@@ -261,7 +261,12 @@ event.bind(
 			return
 		end
 		if selected_thing.name == "ribbon-cables-pin" then
-			_, selected_thing = remote.call("things", "get", selected_thing.parent[1])
+			if selected_thing.parent then
+				_, selected_thing =
+					remote.call("things", "get", selected_thing.parent[1])
+			else
+				return
+			end
 		end
 		if not selected_thing then return end
 		player_state:render_pin_labels(selected_thing, nil)
@@ -304,5 +309,34 @@ event.bind(
 			or entity.name
 		if name ~= "ribbon-cables-pin" then return end
 		player.opened = nil
+	end
+)
+
+--------------------------------------------------------------------------------
+-- CLEAR ORPHANED PINS
+--------------------------------------------------------------------------------
+
+commands.add_command(
+	"ribbon-cables-clear-orphaned-pins",
+	"Clear orphaned ribbon cables pin entities.",
+	function(cmd)
+		local count = 0
+		for _, surface in pairs(game.surfaces) do
+			local pins =
+				surface.find_entities_filtered({ name = "ribbon-cables-pin" })
+			for _, pin in pairs(pins) do
+				local _, thing = remote.call("things", "get", pin)
+				if thing then
+					if not thing.parent then
+						remote.call("things", "force_destroy", thing.id)
+						count = count + 1
+					end
+				else
+					pin.destroy()
+					count = count + 1
+				end
+			end
+		end
+		game.print({ "", "Destroyed ", count, " orphaned pins" })
 	end
 )
