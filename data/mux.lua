@@ -51,7 +51,7 @@ local mux = {
 		"not-upgradable",
 	},
 	minable = { mining_time = 1, result = constants.mux_name },
-	selection_priority = 20,
+	selection_priority = 40,
 }
 
 ---@type data.ItemPrototype
