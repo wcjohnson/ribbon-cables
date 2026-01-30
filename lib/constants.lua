@@ -8,6 +8,6 @@ constants.tech_name = "ribbon-cables-tech"
 
 constants.circuit_wire_max_distance = 9
 
-constants.ribbon_cable_max_distance = 33
+constants.ribbon_cable_max_distance = 64
 
 return constants
