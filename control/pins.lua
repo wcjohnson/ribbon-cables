@@ -1,7 +1,13 @@
--- Manage child pin entities.
+--------------------------------------------------------------------------------
+-- Child pin entities
+--------------------------------------------------------------------------------
 
 local event = require("lib.core.event")
 local strace = require("lib.core.strace")
+
+--------------------------------------------------------------------------------
+-- Pin wiring
+--------------------------------------------------------------------------------
 
 ---@param pin LuaEntity?
 local function disconnect_one_pin_entirely(pin)
@@ -136,6 +142,10 @@ local function disconnect_all_neighbors(me, my_pins)
 	end
 	disconnect_all_pins_entirely(my_pins)
 end
+
+--------------------------------------------------------------------------------
+-- Lifecycle
+--------------------------------------------------------------------------------
 
 ---@param mux_thing_summary things.ThingSummary
 ---@param create_if_missing boolean?
@@ -309,34 +319,5 @@ event.bind(
 			or entity.name
 		if name ~= "ribbon-cables-pin" then return end
 		player.opened = nil
-	end
-)
-
---------------------------------------------------------------------------------
--- CLEAR ORPHANED PINS
---------------------------------------------------------------------------------
-
-commands.add_command(
-	"ribbon-cables-clear-orphaned-pins",
-	"Clear orphaned ribbon cables pin entities.",
-	function(cmd)
-		local count = 0
-		for _, surface in pairs(game.surfaces) do
-			local pins =
-				surface.find_entities_filtered({ name = "ribbon-cables-pin" })
-			for _, pin in pairs(pins) do
-				local _, thing = remote.call("things", "get", pin)
-				if thing then
-					if not thing.parent then
-						remote.call("things", "force_destroy", thing.id)
-						count = count + 1
-					end
-				else
-					pin.destroy()
-					count = count + 1
-				end
-			end
-		end
-		game.print({ "", "Destroyed ", count, " orphaned pins" })
 	end
 )
