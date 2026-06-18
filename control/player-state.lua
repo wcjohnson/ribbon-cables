@@ -16,6 +16,7 @@ local lib = {}
 ---@field connection_source? int64 ID of the Thing selected as source for a connection
 ---@field possible_connection? LuaRenderObject[] Possible connection rendering objects
 ---@field pin_labels? LuaRenderObject[] Pin label rendering objects
+---@field mux_window_position? GuiLocation Player's preferred position for the multiplexer UI
 local PlayerState = class("ribbon_cables.PlayerState")
 lib.PlayerState = PlayerState
 
@@ -97,10 +98,36 @@ function PlayerState:clear_pin_labels()
 	self.pin_labels = nil
 end
 
-local BASE_LABELS = { "1", "2", "3", "4", "5", "6", "7", "8" }
+local BASE_LABELS = {
+	"1",
+	"2",
+	"3",
+	"4",
+	"5",
+	"6",
+	"7",
+	"8",
+	"9",
+	"10",
+	"11",
+	"12",
+	"13",
+	"14",
+	"15",
+	"16",
+}
 
-local default_dir_orientations = { 0, 0, 0, 0, 0, 0, 0, 0 }
+local default_dir_orientations =
+	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 local default_dir_aligns = {
+	"center",
+	"center",
+	"center",
+	"center",
+	"center",
+	"center",
+	"center",
+	"center",
 	"center",
 	"center",
 	"center",
@@ -119,12 +146,60 @@ local default_dir_offsets = {
 	{ -0.15, 0 },
 	{ -0.3, -0.3 },
 	{ -0.15, -0.6 },
+	{ 0, -0.6 },
+	{ 0.15, -0.6 },
+	{ 0.3, -0.3 },
+	{ 0.15, 0 },
+	{ 0, 0 },
+	{ -0.15, 0 },
+	{ -0.3, -0.3 },
+	{ -0.15, -0.6 },
 }
-local custom_dir_orientations =
-	{ 6 / 8, 7 / 8, 0 / 8, 1 / 8, 6 / 8, 7 / 8, 0 / 8, 1 / 8 }
-local custom_dir_aligns =
-	{ "left", "left", "left", "left", "right", "right", "right", "right" }
+local custom_dir_orientations = {
+	6 / 8,
+	7 / 8,
+	0 / 8,
+	1 / 8,
+	6 / 8,
+	7 / 8,
+	0 / 8,
+	1 / 8,
+	6 / 8,
+	7 / 8,
+	0 / 8,
+	1 / 8,
+	6 / 8,
+	7 / 8,
+	0 / 8,
+	1 / 8,
+}
+local custom_dir_aligns = {
+	"left",
+	"left",
+	"left",
+	"left",
+	"right",
+	"right",
+	"right",
+	"right",
+	"left",
+	"left",
+	"left",
+	"left",
+	"right",
+	"right",
+	"right",
+	"right",
+}
 local custom_dir_offsets = {
+	{ -0.3, -0.15 },
+	{ -0.15, -0.3 },
+	{ 0.15, -0.3 },
+	{ 0.3, -0.15 },
+	{ -0.3, 0.15 },
+	{ -0.3, -0.15 },
+	{ -0.15, -0.3 },
+	{ 0.15, -0.3 },
 	{ -0.3, -0.15 },
 	{ -0.15, -0.3 },
 	{ 0.15, -0.3 },
@@ -154,11 +229,12 @@ function PlayerState:render_pin_labels(parent, children)
 	local ros = {}
 	for index, child in pairs(children) do
 		local strindex = tostring(index)
+		local nindex = tonumber(index)
 		local entity = child.entity
 		if entity then
 			local text = labels[strindex]
-				or labels[index]
-				or BASE_LABELS[index]
+				or labels[nindex]
+				or BASE_LABELS[nindex or ""]
 				or "?"
 			local child_pos = entity.position
 			local dir = math.floor(dir_from(parent_pos, child_pos) / 2) + 1

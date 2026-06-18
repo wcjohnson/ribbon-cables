@@ -4,6 +4,9 @@
 
 local event = require("lib.core.event")
 local strace = require("lib.core.strace")
+local olib = require("lib.core.orientation.orientation")
+
+local transform_offset = olib.transform_offset
 
 --------------------------------------------------------------------------------
 -- Pin wiring
@@ -144,6 +147,139 @@ local function disconnect_all_neighbors(me, my_pins)
 end
 
 --------------------------------------------------------------------------------
+-- Dynamic pins
+--------------------------------------------------------------------------------
+
+local PIN_OFFSET = 0.4
+local INNER_PIN_OFFSET = 0.2
+
+local pin_layouts = {
+	[0] = {},
+	[2] = { { -PIN_OFFSET, 0 }, { PIN_OFFSET, 0 } },
+	[4] = {
+		{ 0, -PIN_OFFSET },
+		{ PIN_OFFSET, 0 },
+		{ 0, PIN_OFFSET },
+		{ -PIN_OFFSET, 0 },
+	},
+	[8] = {
+		{ 0, -PIN_OFFSET },
+		{ PIN_OFFSET, -PIN_OFFSET },
+		{ PIN_OFFSET, 0 },
+		{ PIN_OFFSET, PIN_OFFSET },
+		{ 0, PIN_OFFSET },
+		{ -PIN_OFFSET, PIN_OFFSET },
+		{ -PIN_OFFSET, 0 },
+		{ -PIN_OFFSET, -PIN_OFFSET },
+	},
+	[16] = {
+		{ 0, -PIN_OFFSET },
+		{ PIN_OFFSET, -PIN_OFFSET },
+		{ PIN_OFFSET, 0 },
+		{ PIN_OFFSET, PIN_OFFSET },
+		{ 0, PIN_OFFSET },
+		{ -PIN_OFFSET, PIN_OFFSET },
+		{ -PIN_OFFSET, 0 },
+		{ -PIN_OFFSET, -PIN_OFFSET },
+		{ 0, -INNER_PIN_OFFSET },
+		{ INNER_PIN_OFFSET, -INNER_PIN_OFFSET },
+		{ INNER_PIN_OFFSET, 0 },
+		{ INNER_PIN_OFFSET, INNER_PIN_OFFSET },
+		{ 0, INNER_PIN_OFFSET },
+		{ -INNER_PIN_OFFSET, INNER_PIN_OFFSET },
+		{ -INNER_PIN_OFFSET, 0 },
+		{ -INNER_PIN_OFFSET, -INNER_PIN_OFFSET },
+	},
+}
+
+---@param parent_entity LuaEntity
+---@param pos MapPosition
+local function create_pin_entity(parent_entity, pos)
+	return parent_entity.surface.create_entity({
+		name = "ribbon-cables-pin",
+		position = pos,
+		force = parent_entity.force,
+		raise_built = false,
+		create_build_effect_smoke = false,
+	})
+end
+
+local function create_pin_thing(parent, child_entity, index, num, offset)
+	remote.call("things", "create_thing", {
+		entity = child_entity,
+		parent = parent.id,
+		child_index = index,
+		relative_pos = offset,
+		tags = {
+			n = num,
+		},
+	})
+end
+
+local function devoid_pin_thing(child_id, child_entity)
+	remote.call("things", "create_thing", {
+		devoid = child_id,
+		entity = child_entity,
+	})
+end
+
+---Check a mux for correct number and placement of pins, creating or destroying pin entities as needed.
+---@param parent things.ThingSummary
+---@param n_pins 0|2|4|8|16
+function _G.check_pins(parent, n_pins)
+	local pin_layout = pin_layouts[n_pins]
+	if not pin_layout then
+		error("LOGIC ERROR: invalid number of pins: " .. n_pins)
+		return
+	end
+
+	local did_work = false
+	local parent_pos = parent.entity.position
+	local parent_status = parent.status
+	local child_should_live = parent_status == "real" or parent_status == "ghost"
+
+	local _, children = remote.call("things", "get_children", parent.id)
+	for i = 1, n_pins do
+		local pin_index = tostring(i)
+		local pin_offset = pin_layout[i]
+		local child = children and children[pin_index]
+
+		if (not child) and child_should_live then
+			-- Must create entity and thing
+			local child_pos =
+				transform_offset(parent_pos, parent.virtual_orientation, pin_offset)
+			local child_entity = create_pin_entity(parent.entity, child_pos)
+			if child_entity then
+				create_pin_thing(parent, child_entity, pin_index, i, pin_offset)
+				strace.trace("created pin", pin_index, "of mux", parent.id)
+				did_work = true
+			else
+				strace.error("Failed to create pin entity for thing", parent.id)
+			end
+		elseif child and (child.status == "void") and child_should_live then
+			-- Must create entity and devoid thing
+			local child_pos =
+				transform_offset(parent_pos, parent.virtual_orientation, pin_offset)
+			local child_entity = create_pin_entity(parent.entity, child_pos)
+			if child_entity then
+				devoid_pin_thing(child.id, child_entity)
+				strace.trace("devoided pin", pin_index, "of mux", parent.id)
+				did_work = true
+			else
+				strace.error("Failed to create pin entity for thing", parent.id)
+			end
+		elseif child and (child.status ~= "void") and not child_should_live then
+			remote.call("things", "void", child.id)
+			did_work = true
+		end
+	end
+
+	if did_work then
+		event.raise("ribbon-cables.mux_children_normalized", parent)
+	end
+end
+
+--------------------------------------------------------------------------------
 -- Lifecycle
 --------------------------------------------------------------------------------
 
@@ -172,6 +308,28 @@ event.bind(
 				"RIBBON-CABLES: invalid mux in things-on_initialized, shouldnt happen."
 			)
 		end
+		local n_pins_tag = ev.tags and ev.tags.n_pins
+		if n_pins_tag then
+			mux.n_pins = n_pins_tag --[[@as uint]]
+		else
+			local _, n_children = remote.call("things", "get_num_children", ev.id)
+			n_children = n_children or 0
+			if n_children > 8 then
+				n_children = 16
+			elseif n_children > 4 then
+				n_children = 8
+			elseif n_children > 2 then
+				n_children = 4
+			elseif n_children > 0 then
+				n_children = 2
+			else
+				n_children = 0
+			end
+			mux.n_pins = n_children
+		end
+		strace.trace("Initialized mux", mux.thing_id, "with", mux.n_pins, "pins")
+		-- Create pins
+		check_pins(ev, mux.n_pins)
 		if mux then mux:update_connection_render_objects() end
 		-- NOTE: on_children_normalized handles neighbor connection on creation
 	end
@@ -188,6 +346,10 @@ event.bind(
 			return
 		end
 		local entity, mux = get_mux_info(ev.thing, false)
+		-- Check pins in all non-void states
+		if mux and (ev.new_status == "ghost" or ev.new_status == "real") then
+			check_pins(ev.thing, mux.n_pins)
+		end
 		if mux then mux:update_connection_render_objects() end
 		if ev.old_status == "ghost" and ev.new_status == "real" then
 			-- Connect to all neighbors on revival.
@@ -220,15 +382,16 @@ event.bind(
 )
 
 event.bind(
-	"ribbon-cables-on_children_normalized",
-	---@param ev things.EventData.on_children_normalized
-	function(ev)
-		strace.trace("ribbon-cables-on_children_normalized", ev)
+	"ribbon-cables.mux_children_normalized",
+	---@param mux_thing_summary things.ThingSummary
+	function(mux_thing_summary)
+		strace.trace("ribbon-cables-on_children_normalized", mux_thing_summary)
 		-- Reconnect to all neighbors if not ghost
-		if ev.status == "real" then
-			local _, pins = remote.call("things", "get_children", ev.id)
-			disconnect_all_neighbors(ev, pins)
-			connect_all_neighbors(ev, pins, nil, nil)
+		if mux_thing_summary.status == "real" then
+			local _, pins =
+				remote.call("things", "get_children", mux_thing_summary.id)
+			disconnect_all_neighbors(mux_thing_summary, pins)
+			connect_all_neighbors(mux_thing_summary, pins, nil, nil)
 		end
 	end
 )
@@ -244,6 +407,14 @@ event.bind(
 		if mux then mux:update_connection_render_objects() end
 	end
 )
+
+event.bind("ribbon-cables.mux_pins_changed", function(ev)
+	local _, thing = remote.call("things", "get", ev.thing_id)
+	if not thing then return end
+	local n_pins = ev:get_n_pins()
+	remote.call("things", "set_tag", thing.id, "n_pins", n_pins)
+	check_pins(thing, n_pins)
+end)
 
 --------------------------------------------------------------------------------
 -- PIN LABELS
@@ -265,12 +436,16 @@ event.bind(
 			not selected_thing
 			or not (
 				selected_thing.name == "ribbon-cables-pin"
+				or selected_thing.name == "ribbon-cables-pin-legacy"
 				or selected_thing.name == "ribbon-cables-mux"
 			)
 		then
 			return
 		end
-		if selected_thing.name == "ribbon-cables-pin" then
+		if
+			selected_thing.name == "ribbon-cables-pin"
+			or selected_thing.name == "ribbon-cables-pin-legacy"
+		then
 			if selected_thing.parent then
 				_, selected_thing =
 					remote.call("things", "get", selected_thing.parent[1])
@@ -304,6 +479,7 @@ event.bind(
 --------------------------------------------------------------------------------
 -- SUPPRESS CONTAINER GUI
 -- If a pin is clicked, close the resulting container GUI.
+-- (Applies to legacy pins only)
 --------------------------------------------------------------------------------
 
 event.bind(
@@ -317,7 +493,7 @@ event.bind(
 		if not player then return end
 		local name = entity.type == "entity-ghost" and entity.ghost_name
 			or entity.name
-		if name ~= "ribbon-cables-pin" then return end
+		if name ~= "ribbon-cables-pin-legacy" then return end
 		player.opened = nil
 	end
 )

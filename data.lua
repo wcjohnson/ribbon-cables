@@ -1,6 +1,7 @@
 local oc_lib = require("lib.core.orientation.orientation-class")
 
 require("data.pin")
+require("data.legacy-pin")
 require("data.mux")
 require("data.tech")
 
@@ -75,48 +76,6 @@ local mux_registration = {
 		on_children_normalized = "ribbon-cables-on_children_normalized",
 		on_orientation_changed = "ribbon-cables-on_orientation_changed",
 	},
-	children = {
-		[1] = {
-			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
-			offset = { 0, -PIN_OFFSET },
-			lifecycle_type = "real-real",
-		},
-		[2] = {
-			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
-			offset = { PIN_OFFSET, -PIN_OFFSET },
-			lifecycle_type = "real-real",
-		},
-		[3] = {
-			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
-			offset = { PIN_OFFSET, 0 },
-			lifecycle_type = "real-real",
-		},
-		[4] = {
-			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
-			offset = { PIN_OFFSET, PIN_OFFSET },
-			lifecycle_type = "real-real",
-		},
-		[5] = {
-			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
-			offset = { 0, PIN_OFFSET },
-			lifecycle_type = "real-real",
-		},
-		[6] = {
-			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
-			offset = { -PIN_OFFSET, PIN_OFFSET },
-			lifecycle_type = "real-real",
-		},
-		[7] = {
-			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
-			offset = { -PIN_OFFSET, 0 },
-			lifecycle_type = "real-real",
-		},
-		[8] = {
-			create = { name = "ribbon-cables-pin", position = { 0, 0 } },
-			offset = { -PIN_OFFSET, -PIN_OFFSET },
-			lifecycle_type = "real-real",
-		},
-	},
 }
 data.raw["mod-data"]["things-names"].data["ribbon-cables-mux"] =
 	mux_registration
@@ -124,9 +83,6 @@ data.raw["mod-data"]["things-names"].data["ribbon-cables-mux"] =
 ---@type things.ThingRegistration
 local pin_registration = {
 	name = "ribbon-cables-pin",
-	custom_blueprint_geometry = {
-		[0] = { -0.3, -0.3, 0.09, 0.09 },
-	},
 	intercept_construction = false,
 	no_garbage_collection = true,
 	allow_in_cursor = "never",
@@ -137,6 +93,20 @@ local pin_registration = {
 }
 data.raw["mod-data"]["things-names"].data["ribbon-cables-pin"] =
 	pin_registration
+
+---@type things.ThingRegistration
+local legacy_pin_registration = {
+	name = "ribbon-cables-pin-legacy",
+	intercept_construction = false,
+	no_garbage_collection = true,
+	allow_in_cursor = "never",
+	custom_events = {
+		on_status = "ribbon-cables-on_pin_status",
+		on_immediate_voided = "ribbon-cables-on_pin_immediate_voided",
+	},
+}
+data.raw["mod-data"]["things-names"].data["ribbon-cables-pin-legacy"] =
+	legacy_pin_registration
 
 data.raw["mod-data"]["things-graphs"].data["ribbon-cables"] = {
 	directed = false,

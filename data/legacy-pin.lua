@@ -1,7 +1,6 @@
 ---Circuit connector pins.
 
 local constants = require("lib.constants")
-local data_util = require("lib.core.data-util")
 
 ---@type data.Sprite
 local pin_sprite = {
@@ -11,35 +10,17 @@ local pin_sprite = {
 	tint = { 1, 1, 1, 1 },
 }
 
----@type data.RotatedSprite
-local pin_pictures = {
-	layers = {
-		data_util.sprite_to_rotated(pin_sprite),
-	},
-}
-
----@type data.WireConnectionPoint
-local ZERO_CONNECTION_POINT = {
-	wire = { green = { 0, 0 }, red = { 0, 0 } },
-	shadow = { green = { 0, 0 }, red = { 0, 0 } },
-}
-
----@type data.ElectricPolePrototype
+---@type data.ContainerPrototype
 local pin = {
 	-- PrototypeBase
-	type = "electric-pole",
-	name = constants.pin_name,
+	type = "container",
+	name = "ribbon-cables-pin-legacy",
 	hidden_in_factoriopedia = true,
 
-	-- ElectricPolePrototype
-	supply_area_distance = 0,
-	auto_connect_up_to_n_wires = 0,
-	rewire_neighbours_when_destroying = false,
-	connection_points = {
-		ZERO_CONNECTION_POINT,
-	},
-	pictures = pin_pictures,
-	maximum_wire_distance = constants.circuit_wire_max_distance,
+	-- ContainerPrototype
+	inventory_size = 0,
+	picture = pin_sprite,
+	circuit_wire_max_distance = constants.circuit_wire_max_distance,
 	draw_copper_wires = false,
 	draw_circuit_wires = true,
 
@@ -74,7 +55,7 @@ local pin = {
 local pin_item = {
 	-- PrototypeBase
 	type = "item",
-	name = constants.pin_name,
+	name = "ribbon-cables-pin-legacy",
 	order = "f[iber-optics]",
 	subgroup = "circuit-network",
 	hidden_in_factoriopedia = true,
@@ -83,7 +64,7 @@ local pin_item = {
 	stack_size = 50,
 	icon = "__ribbon-cables__/graphics/icon-jumper-wire.png",
 	icon_size = 256,
-	place_result = constants.pin_name,
+	place_result = "ribbon-cables-pin-legacy",
 	flags = { "hide-from-bonus-gui", "only-in-cursor" },
 	weight = 0,
 }

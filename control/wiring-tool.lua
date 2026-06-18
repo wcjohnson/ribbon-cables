@@ -72,8 +72,8 @@ end
 ---@param thing things.ThingSummary
 ---@param player_state ribbon_cables.PlayerState
 local function selected_with_wiring_tool(player, thing, player_state)
-	local mux_state = get_multiplexer_state(thing.id)
-	if not mux_state then
+	local target_mux = get_multiplexer_state(thing.id)
+	if not target_mux then
 		player.print(
 			{ "ribbon-cables.error-select-valid-entity" },
 			{ skip = defines.print_skip.never, sound = defines.print_sound.always }
@@ -82,9 +82,26 @@ local function selected_with_wiring_tool(player, thing, player_state)
 	end
 
 	if player_state.connection_source then
+		-- Cant connect to self
 		if player_state.connection_source == thing.id then
 			player.print(
 				{ "ribbon-cables.error-cannot-connect-to-self" },
+				{ skip = defines.print_skip.never, sound = defines.print_sound.always }
+			)
+			player_state:clear_connection()
+			player.clear_cursor()
+			return
+		end
+		-- Verify equal n_pins
+		local source_mux = get_multiplexer_state(player_state.connection_source)
+		if not source_mux then
+			player_state:clear_connection()
+			player.clear_cursor()
+			return
+		end
+		if source_mux:get_n_pins() ~= target_mux:get_n_pins() then
+			player.print(
+				{ "ribbon-cables.error-mismatched-pin-count" },
 				{ skip = defines.print_skip.never, sound = defines.print_sound.always }
 			)
 			player_state:clear_connection()

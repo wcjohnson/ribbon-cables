@@ -4,18 +4,68 @@ local pos_lib = require("lib.core.math.pos")
 local constants = require("lib.constants")
 local orientation_lib = require("lib.core.orientation.orientation")
 local strace = require("lib.core.strace")
+local event = require("lib.core.event")
 
 ---@class ribbon_cables.Multiplexer
 ---@field thing_id int
+---@field n_pins 0|2|4|8|16
 ---@field connection_render_objects LuaRenderObject[]
 local Multiplexer = class("ribbon_cables.Multiplexer")
 _G.Multiplexer = Multiplexer
 
 function Multiplexer:new(thing_id)
-	local obj =
-		setmetatable({ thing_id = thing_id, connection_render_objects = {} }, self)
+	local obj = setmetatable(
+		{ thing_id = thing_id, connection_render_objects = {}, n_pins = 0 },
+		self
+	)
 	storage.multiplexers[thing_id] = obj
 	return obj
+end
+
+function Multiplexer:get_n_pins() return self.n_pins end
+
+function Multiplexer:set_n_pins(n)
+	if self.n_pins == n then return end
+	if self.n_pins ~= 0 then
+		strace.error(
+			"Attempted to change number of pins on Mux",
+			self.thing_id,
+			"from",
+			self.n_pins,
+			"to",
+			n
+		)
+		return
+	end
+	self.n_pins = n
+	event.raise("ribbon-cables.mux_pins_changed", self)
+end
+
+---@return {[string]: string}
+function Multiplexer:get_pin_labels()
+	local _, labels =
+		remote.call("things-tags-v1", "get_tag", self.thing_id, "labels")
+	labels = labels or {}
+	return labels
+end
+
+---@param pin_index uint
+---@param label string?
+function Multiplexer:set_pin_label(pin_index, label)
+	if label == "" then label = nil end
+	local labels = self:get_pin_labels()
+	labels[tostring(pin_index)] = label
+	remote.call("things-tags-v1", "set_tag", self.thing_id, "labels", labels)
+end
+
+function Multiplexer:get_connection_key()
+	local _, key = remote.call("things-tags-v1", "get_tag", self.thing_id, "key")
+	return key
+end
+
+function Multiplexer:set_connection_key(key)
+	key = key and tostring(key)
+	remote.call("things-tags-v1", "set_tag", self.thing_id, "key", key)
 end
 
 function Multiplexer:destroy_connection_render_objects()
