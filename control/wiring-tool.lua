@@ -92,13 +92,15 @@ local function selected_with_wiring_tool(player, thing, player_state)
 			player.clear_cursor()
 			return
 		end
-		-- Verify equal n_pins
+
 		local source_mux = get_multiplexer_state(player_state.connection_source)
 		if not source_mux then
 			player_state:clear_connection()
 			player.clear_cursor()
 			return
 		end
+
+		-- Verify equal n_pins
 		if source_mux:get_n_pins() ~= target_mux:get_n_pins() then
 			player.print(
 				{ "ribbon-cables.error-mismatched-pin-count" },
@@ -108,6 +110,18 @@ local function selected_with_wiring_tool(player, thing, player_state)
 			player.clear_cursor()
 			return
 		end
+
+		-- Verify equal connection key
+		if source_mux:get_connection_key() ~= target_mux:get_connection_key() then
+			player.print(
+				{ "ribbon-cables.error-mismatched-connection-key" },
+				{ skip = defines.print_skip.never, sound = defines.print_sound.always }
+			)
+			player_state:clear_connection()
+			player.clear_cursor()
+			return
+		end
+
 		return toggle_connection(player, thing, player_state)
 	else
 		strace.trace(
@@ -185,8 +199,11 @@ event.bind(
 		player_state:clear_possible_connection_rendering()
 		if not selected then return end
 		local _, selected_thing = remote.call("things", "get", selected)
+		local selected_mux = selected_thing
+			and get_multiplexer_state(selected_thing.id)
 		if
 			not selected_thing
+			or not selected_mux
 			or selected_thing.name ~= "ribbon-cables-mux"
 			or selected_thing.id == player_state.connection_source
 		then
@@ -194,7 +211,10 @@ event.bind(
 		end
 		local _, origin_thing =
 			remote.call("things", "get", player_state.connection_source)
-		if not origin_thing or not origin_thing.entity then return end
+		local origin_mux = origin_thing and get_multiplexer_state(origin_thing.id)
+		if not origin_thing or not origin_thing.entity or not origin_mux then
+			return
+		end
 		local will_connect = true
 		local _, edge = remote.call(
 			"things",
@@ -205,10 +225,23 @@ event.bind(
 		)
 		if edge then will_connect = false end
 		if
-			pos_lib.pos_distsq(
-				origin_thing.entity.position,
-				selected_thing.entity.position
-			) > MAX_DISTSQ
+			will_connect
+			and pos_lib.pos_distsq(
+					origin_thing.entity.position,
+					selected_thing.entity.position
+				)
+				> MAX_DISTSQ
+		then
+			will_connect = false
+		end
+		if
+			will_connect and (origin_mux:get_n_pins() ~= selected_mux:get_n_pins())
+		then
+			will_connect = false
+		end
+		if
+			will_connect
+			and (origin_mux:get_connection_key() ~= selected_mux:get_connection_key())
 		then
 			will_connect = false
 		end

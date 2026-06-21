@@ -62,18 +62,27 @@ relm.define("MuxUi", function(props)
 		})
 	end)
 
-	for i = 1, n_pins do
-		local string_index = tostring(i)
-		elts[#elts + 1] = ultros.Labeled({
-			caption = "Pin " .. string_index .. ":",
-		}, {
+	if n_pins > 0 then
+		for i = 1, n_pins do
+			local string_index = tostring(i)
+			elts[#elts + 1] = ultros.Labeled({
+				caption = "Pin " .. string_index .. ":",
+			}, {
+				ultros.UncontrolledInput({
+					value = pin_labels[string_index] or "",
+					icon_selector = true,
+					on_change = function(_, new_label)
+						local value = tostring(new_label) or ""
+						mux:set_pin_label(i, value)
+					end,
+				}),
+			})
+		end
+
+		elts[#elts + 1] = ultros.Labeled({ caption = "Connection key:" }, {
 			ultros.UncontrolledInput({
-				value = pin_labels[string_index] or "",
-				icon_selector = true,
-				on_change = function(_, new_label)
-					local value = tostring(new_label) or ""
-					mux:set_pin_label(i, value)
-				end,
+				value = mux:get_connection_key() or "",
+				on_change = function(_, new_key) mux:set_connection_key(new_key) end,
 			}),
 		})
 	end

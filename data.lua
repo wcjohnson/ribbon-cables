@@ -1,5 +1,9 @@
 local oc_lib = require("lib.core.orientation.orientation-class")
 
+-- Bootstrap Relm data phase
+_G.__RELM_GRAPHICS_PATH__ = "__ribbon-cables__/lib/core/relm/graphics/"
+require("lib.core.relm.relm_data")
+
 require("data.pin")
 require("data.legacy-pin")
 require("data.mux")
