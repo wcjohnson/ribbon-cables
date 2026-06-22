@@ -1,14 +1,17 @@
 # Ribbon Cables
 
-**This mod is currently in Alpha testing. All functionality is implemented, but bugs may be present. Beware!**
+**This mod is currently in BETA.**
 
-Ribbon cables multiplex 16 circuit network wires (8 red, 8 green) using 1x1 entities that connect to each other using a customized cable network. This allows you to:
+Ribbon cables multiplex up to 16 red and green circuit connection pins using 1x1 entities that connect to each other using a customized cable network. This allows you to:
 
 - Fit more circuitry into smaller spaces.
 - Move more information over long distances.
 - Connect smart factory modules compactly using single data cables rather than a lot of power poles.
-- **Actual zero UPS impact** - No polling or on-tick code. The simulated wire connections are accomplished using hidden script wires, which have the same speed as actual wire connections.
-- **Full flip, rotation, copy/paste, blueprinting, overlap, and undo support** thanks to the magic of Things.
+
+Other neat features:
+
+- **Actual zero UPS impact** - No polling or on-tick code. The virtual wire connections are accomplished using hidden script wires, which have the same speed as normal red and green wire connections.
+- **Full flip, rotation, copy/paste, blueprinting, overlap, and undo support.**
 
 ## How to Use:
 
@@ -36,7 +39,6 @@ You can build any size network of Multiplexers and they will all mutually connec
 ## Credits
 
 - **hgschmie** for the excellent Fiber Optics mod which inspired this mod. My main problem with Fiber Optics was its use of the electrical network, hence the custom ribbon cable network introduced in this mod.
-- The **Things library** for making this mod 100x easier to build.
 
 ## Contributing
 

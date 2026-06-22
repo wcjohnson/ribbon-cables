@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.6
+Date: ????
+  Changes:
+    - Multiplexers now have dynamic pin counts. When initially constructing one, you can choose how many pins it has from 2, 4, 8, or 16.
+    - Multiplexers now have a "connection key" which must match in order to connect two multiplexers together. This allows you to have multiple independent ribbon cable networks without worrying about accidental cross-connections.
+    - Multiplexers must match in pin-count and connection-key to connect.
+    - Increased ribbon cable max length to 64.
+  Bugfixes:
+    - Fixed a selection stacking issue between multiplexers and tile ghosts.
+---------------------------------------------------------------------------------------------------
 Version: 0.1.5
 Date: 2025-12-17
   Changes:
