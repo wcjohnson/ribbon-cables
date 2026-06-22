@@ -479,7 +479,6 @@ event.bind(
 --------------------------------------------------------------------------------
 -- SUPPRESS CONTAINER GUI
 -- If a pin is clicked, close the resulting container GUI.
--- (Applies to legacy pins only)
 --------------------------------------------------------------------------------
 
 event.bind(
@@ -493,7 +492,11 @@ event.bind(
 		if not player then return end
 		local name = entity.type == "entity-ghost" and entity.ghost_name
 			or entity.name
-		if name ~= "ribbon-cables-pin-legacy" then return end
+		if
+			(name ~= "ribbon-cables-pin-legacy") and (name ~= "ribbon-cables-pin")
+		then
+			return
+		end
 		player.opened = nil
 	end
 )
