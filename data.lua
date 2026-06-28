@@ -15,7 +15,6 @@ data:extend({
 	{ type = "custom-event", name = "ribbon-cables-on_edge_status" },
 	{ type = "custom-event", name = "ribbon-cables-on_edge_changed" },
 	{ type = "custom-event", name = "ribbon-cables-on_orientation_changed" },
-	{ type = "custom-event", name = "ribbon-cables-on_children_normalized" },
 	{ type = "custom-event", name = "ribbon-cables-on_pin_status" },
 	{ type = "custom-event", name = "ribbon-cables-on_pin_immediate_voided" },
 	{
@@ -77,7 +76,6 @@ local mux_registration = {
 		on_initialized = "ribbon-cables-on_initialized",
 		on_status = "ribbon-cables-on_status",
 		on_edge_status = "ribbon-cables-on_edge_status",
-		on_children_normalized = "ribbon-cables-on_children_normalized",
 		on_orientation_changed = "ribbon-cables-on_orientation_changed",
 	},
 }

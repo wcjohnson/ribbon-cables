@@ -3,6 +3,7 @@ local relm = require("lib.core.relm.relm")
 local ultros = require("lib.core.relm.ultros")
 local relm_util = require("lib.core.relm.util")
 local strace = require("lib.core.strace")
+local entities_lib = require("lib.core.entities")
 
 relm.define("MuxUi", function(props)
 	local root_id = props.root_id
@@ -114,7 +115,9 @@ event.bind("ribbon-cables-click", function(ev)
 
 	local selected = player.selected
 	if not selected or not selected.valid then return end
-	if selected.name ~= "ribbon-cables-mux" then return end
+	if entities_lib.true_prototype_name(selected) ~= "ribbon-cables-mux" then
+		return
+	end
 
 	local _, thing = remote.call("things", "get", selected)
 	if not thing or not thing.entity then return end
