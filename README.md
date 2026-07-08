@@ -20,21 +20,27 @@ Other neat features:
 
 ![Image](https://raw.githubusercontent.com/wcjohnson/ribbon-cables/main/doc/place-multiplexers.png)
 
-3) Find the Ribbon Cable Connection Tool in your toolbox:
+3) Click on the multiplexers and select the number of desired pins. (Copy/pasting from a single multiplexer makes this faster.)
+4) Find the Ribbon Cable Connection Tool in your toolbox:
 
 ![Image](https://raw.githubusercontent.com/wcjohnson/ribbon-cables/main/doc/tool-in-toolbar.png)
 
-4) Create a connection between your two placed Multiplexers, just as you would a circuit wire:
+5) Create a connection between your two placed Multiplexers, just as you would a circuit wire:
 
 ![Image](https://raw.githubusercontent.com/wcjohnson/ribbon-cables/main/doc/connecting.png)
 
 ![Image](https://raw.githubusercontent.com/wcjohnson/ribbon-cables/main/doc/connected.png)
 
-5) You're done! Devices connected to corresponding pins on your multiplexers are now all on the same circuit.
+6) You're done! Devices connected to corresponding pins on your multiplexers are now all on the same circuit.
 
 ![Image](https://raw.githubusercontent.com/wcjohnson/ribbon-cables/main/doc/operational.png)
 
 You can build any size network of Multiplexers and they will all mutually connect. The pins are connected by number; to see corresponding pin numbers, just mouse over the Multiplexer.
+
+Clicking on a Multiplexer gives a window with some additional options:
+
+- **Pin Labels** - Each pin may be given a richtext label that will replace the number when hovered.
+- **Connection Key** - If a key string is entered here, this multiplexer can only connect to others that have the same key string.
 
 ## Credits
 
