@@ -232,23 +232,28 @@ function _G.check_pins(parent, n_pins)
 		error("LOGIC ERROR: invalid number of pins: " .. n_pins)
 		return
 	end
+	local parent_entity = parent.entity
+	if not parent_entity then
+		error("LOGIC ERROR: parent entity is nil for mux " .. parent.id)
+		return
+	end
 
 	local did_work = false
-	local parent_pos = parent.entity.position
+	local parent_pos = parent_entity.position
 	local parent_status = parent.status
 	local child_should_live = parent_status == "real" or parent_status == "ghost"
 
 	local _, children = remote.call("things", "get_children", parent.id)
 	for i = 1, n_pins do
 		local pin_index = tostring(i)
-		local pin_offset = pin_layout[i]
+		local pin_offset = pin_layout[i] --[[@as MapPosition]]
 		local child = children and children[pin_index]
 
 		if (not child) and child_should_live then
 			-- Must create entity and thing
 			local child_pos =
 				transform_offset(parent_pos, parent.virtual_orientation, pin_offset)
-			local child_entity = create_pin_entity(parent.entity, child_pos)
+			local child_entity = create_pin_entity(parent_entity, child_pos)
 			if child_entity then
 				create_pin_thing(parent, child_entity, pin_index, i, pin_offset)
 				strace.trace("created pin", pin_index, "of mux", parent.id)
@@ -260,7 +265,7 @@ function _G.check_pins(parent, n_pins)
 			-- Must create entity and devoid thing
 			local child_pos =
 				transform_offset(parent_pos, parent.virtual_orientation, pin_offset)
-			local child_entity = create_pin_entity(parent.entity, child_pos)
+			local child_entity = create_pin_entity(parent_entity, child_pos)
 			if child_entity then
 				devoid_pin_thing(child.id, child_entity)
 				strace.trace("devoided pin", pin_index, "of mux", parent.id)
@@ -304,14 +309,16 @@ event.bind(
 	function(ev)
 		local entity, mux = get_mux_info(ev, true)
 		if not entity or not mux then
-			return debug_crash(
-				"RIBBON-CABLES: invalid mux in things-on_initialized, shouldnt happen."
+			error(
+				"LOGIC ERROR: invalid mux in things-on_initialized, shouldnt happen."
 			)
+			return
 		end
-		local n_pins_tag = ev.tags and ev.tags.n_pins
+		local n_pins_tag = (ev.tags and ev.tags.n_pins) --[[@as uint?]]
 		if n_pins_tag then
-			mux.n_pins = n_pins_tag --[[@as uint]]
+			mux.n_pins = n_pins_tag
 		else
+			---@type any, uint
 			local _, n_children = remote.call("things", "get_num_children", ev.id)
 			n_children = n_children or 0
 			if n_children > 8 then

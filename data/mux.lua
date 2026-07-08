@@ -35,6 +35,8 @@ local mux = {
 	-- EntityPrototype
 	icon = "__ribbon-cables__/graphics/mux-icon-128.png",
 	icon_size = 128,
+	-- XXX: TYPES: FMTK vector bug
+	---@diagnostic disable-next-line: missing-fields
 	collision_box = { { -0.45, -0.45 }, { 0.45, 0.45 } },
 	collision_mask = {
 		layers = {
@@ -44,6 +46,8 @@ local mux = {
 			water_tile = true,
 		},
 	},
+	-- XXX: TYPES: FMTK vector bug
+	---@diagnostic disable-next-line: missing-fields
 	selection_box = { { -0.5, -0.5 }, { 0.5, 0.5 } },
 	flags = {
 		"player-creation",

@@ -10,7 +10,7 @@ Ribbon cables multiplex up to 16 red and green circuit connection pins using 1x1
 
 Other neat features:
 
-- **Actual zero UPS impact** - No polling or on-tick code. The virtual wire connections are accomplished using hidden script wires, which have the same speed as normal red and green wire connections.
+- **No scripted UPS impact** - No polling or on-tick code. The virtual wire connections are accomplished using hidden script wires between power poles and have the same UPS impact as the equivalent vanilla Factorio construction.
 - **Full flip, rotation, copy/paste, blueprinting, overlap, and undo support.**
 
 ## How to Use:

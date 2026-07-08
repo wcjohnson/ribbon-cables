@@ -133,16 +133,17 @@ events.bind(
 	"ribbon-cables-on_pin_immediate_voided",
 	---@param ev things.EventData.on_immediate_voided
 	function(ev)
-		local pin_entity = ev.entity
+		local thing = ev.thing
+		local pin_entity = thing.entity
 		if not pin_entity then return end
-		local _, transient = remote.call("things", "get_transient_data", ev.id)
+		local _, transient = remote.call("things", "get_transient_data", thing.id)
 		if transient and transient.connections then return end
 		local connections = {}
-		save_connections(connections, ev)
+		save_connections(connections, thing)
 		remote.call(
 			"things",
 			"set_transient_data",
-			ev.id,
+			thing.id,
 			"connections",
 			connections
 		)

@@ -220,6 +220,7 @@ function PlayerState:render_pin_labels(parent, children)
 		_, children = remote.call("things", "get_children", parent.id)
 	end
 	if not children then return end
+	---@type table<string|number, string>
 	local labels = BASE_LABELS
 	if parent.tags and parent.tags.labels then
 		labels = parent.tags.labels --[[@as table]]
@@ -233,8 +234,10 @@ function PlayerState:render_pin_labels(parent, children)
 		local entity = child.entity
 		if entity then
 			local text = labels[strindex]
-				or labels[nindex]
-				or BASE_LABELS[nindex or ""]
+				or labels[nindex or 0]
+				-- XXX: TYPES: fiasco
+
+				or (BASE_LABELS --[[@as table<number,string>]])[nindex or 0]
 				or "?"
 			local child_pos = entity.position
 			local dir = math.floor(dir_from(parent_pos, child_pos) / 2) + 1

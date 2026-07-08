@@ -30,8 +30,12 @@ local pin = {
 	-- EntityPrototype
 	icon = "__ribbon-cables__/graphics/icon-jumper-wire.png",
 	icon_size = 256,
+	-- XXX: TYPES: FMTK vector bug
+	---@diagnostic disable-next-line: missing-fields
 	collision_box = { { -0.1, -0.1 }, { 0.1, 0.1 } },
 	collision_mask = { layers = {} },
+	-- XXX: TYPES: FMTK vector bug
+	---@diagnostic disable-next-line: missing-fields
 	selection_box = { { -0.1, -0.1 }, { 0.1, 0.1 } },
 	flags = {
 		"placeable-off-grid",

@@ -10,8 +10,7 @@ local event = require("lib.core.event")
 ---@field thing_id int
 ---@field n_pins 0|2|4|8|16
 ---@field connection_render_objects LuaRenderObject[]
-local Multiplexer = class("ribbon_cables.Multiplexer")
-_G.Multiplexer = Multiplexer
+Multiplexer = class("ribbon_cables.Multiplexer")
 
 function Multiplexer:new(thing_id)
 	local obj = setmetatable(

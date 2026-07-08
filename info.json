@@ -7,7 +7,7 @@
   "homepage": "https://github.com/wcjohnson/ribbon-cables",
   "description": "Multiplex many circuit network connections onto ribbon cables which can carry many signals over long distances.",
   "factorio_version": "2.1",
-  "dependencies": [ "base >= 2.1.7", "0-things >= 0.3.0" ],
+  "dependencies": [ "base >= 2.1.7", "0-things >= 0.5.0" ],
   "package": {
     "git_publish_branch": "main",
     "ignore": [ "crowdin.yml", "stylua.toml", "tests/**", "doc/**" ],
