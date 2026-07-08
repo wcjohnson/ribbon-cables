@@ -8,12 +8,12 @@ local entities_lib = require("lib.core.entities")
 relm.define("MuxUi", function(props)
 	local root_id = props.root_id
 	local player_index = props.player_index
-	local player = game.get_player(player_index)
+	local player = game and game.get_player(player_index)
 	local mux = props.mux --[[@as ribbon_cables.Multiplexer]]
 	local n_pins = mux:get_n_pins()
 	local pin_labels = mux:get_pin_labels()
 
-	if (not player) or not player.valid then return end
+	if (not player) or not player.valid then return nil end
 
 	-- Window management
 	local function close_me() relm.root_destroy(root_id) end
