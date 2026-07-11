@@ -2,6 +2,10 @@ local class = require("lib.core.class").class
 local ovl_lib = require("lib.core.overlay")
 local pos_lib = require("lib.core.math.pos")
 local strace = require("lib.core.strace")
+---@diagnostic disable-next-line: unresolved-require
+local things_client = require("__0-things__.client.client") --[[@as things.client]]
+
+local get_children = things_client.parent_child_v1.get_children
 
 local pos_new = pos_lib.pos_new
 local pos_add = pos_lib.pos_add
@@ -211,14 +215,12 @@ local custom_dir_offsets = {
 }
 
 ---@param parent things.ThingSummary
----@param children things.ThingChildrenSummary?
+---@param children table<string, things.ThingChildInfo>?
 function PlayerState:render_pin_labels(parent, children)
 	local parent_entity = parent.entity
 	if not parent_entity then return end
 	local parent_pos = parent_entity.position
-	if not children then
-		_, children = remote.call("things", "get_children", parent.id)
-	end
+	if not children then children = get_children(parent.id) end
 	if not children then return end
 	---@type table<string|number, string>
 	local labels = BASE_LABELS

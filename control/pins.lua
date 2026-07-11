@@ -5,6 +5,10 @@
 local event = require("lib.core.event")
 local strace = require("lib.core.strace")
 local olib = require("lib.core.orientation.orientation")
+---@diagnostic disable-next-line: unresolved-require
+local things_client = require("__0-things__.client.client") --[[@as things.client]]
+
+local get_children = things_client.parent_child_v1.get_children
 
 local transform_offset = olib.transform_offset
 
@@ -64,7 +68,7 @@ local function disconnect_one_pin(from_pin, to_pin)
 end
 
 ---Remove all script wires connecting pins to other pins.
----@param pins {[string|int]: things.ThingSummary}?
+---@param pins table<string, things.ThingChildInfo>?
 local function disconnect_all_pins_entirely(pins)
 	if not pins then return end
 	for index, child_summary in pairs(pins) do
@@ -72,8 +76,8 @@ local function disconnect_all_pins_entirely(pins)
 	end
 end
 
----@param from_pins {[string|int]: things.ThingSummary}?
----@param to_pins {[string|int]: things.ThingSummary}?
+---@param from_pins table<string, things.ThingChildInfo>?
+---@param to_pins table<string, things.ThingChildInfo>?
 local function connect_each_pin(from_pins, to_pins)
 	if not from_pins or not to_pins then return end
 	for from_index, from_pin_summary in pairs(from_pins) do
@@ -84,8 +88,8 @@ local function connect_each_pin(from_pins, to_pins)
 	end
 end
 
----@param from_pins {[string|int]: things.ThingSummary}?
----@param to_pins {[string|int]: things.ThingSummary}?
+---@param from_pins table<string, things.ThingChildInfo>?
+---@param to_pins table<string, things.ThingChildInfo>?
 local function disconnect_each_pin(from_pins, to_pins)
 	if not from_pins or not to_pins then return end
 	for from_index, from_pin_summary in pairs(from_pins) do
@@ -96,33 +100,31 @@ local function disconnect_each_pin(from_pins, to_pins)
 	end
 end
 
----@param my_pins {[string|int]: things.ThingSummary}?
+---@param my_pins table<string, things.ThingChildInfo>?
 ---@param neighbor_id uint64?
 local function connect_one_neighbor(my_pins, neighbor_id)
 	if not my_pins or not neighbor_id then return end
 	local _, neighbor = remote.call("things", "get", neighbor_id)
 	if not neighbor or neighbor.status ~= "real" then return end
-	local _, neighbor_pins = remote.call("things", "get_children", neighbor_id)
+	local neighbor_pins = get_children(neighbor_id)
 	connect_each_pin(my_pins, neighbor_pins)
 end
 
----@param my_pins {[string|int]: things.ThingSummary}?
+---@param my_pins table<string, things.ThingChildInfo>?
 ---@param neighbor_id uint64?
 local function disconnect_one_neighbor(my_pins, neighbor_id)
 	if not my_pins or not neighbor_id then return end
-	local _, neighbor_pins = remote.call("things", "get_children", neighbor_id)
+	local neighbor_pins = get_children(neighbor_id)
 	disconnect_each_pin(my_pins, neighbor_pins)
 end
 
 ---@param me things.ThingSummary?
----@param my_pins {[string|int]: things.ThingSummary}?
+---@param my_pins table<string, things.ThingChildInfo>?
 ---@param out_edges {[int64]: things.GraphEdge}?
 ---@param in_edges {[int64]: things.GraphEdge}?
 local function connect_all_neighbors(me, my_pins, out_edges, in_edges)
 	if not me then return end
-	if not my_pins then
-		_, my_pins = remote.call("things", "get_children", me.id)
-	end
+	if not my_pins then my_pins = get_children(me.id) end
 	if not out_edges or not in_edges then
 		_, out_edges, in_edges =
 			remote.call("things", "get_edges", "ribbon-cables", me.id)
@@ -137,12 +139,10 @@ local function connect_all_neighbors(me, my_pins, out_edges, in_edges)
 end
 
 ---@param me things.ThingSummary?
----@param my_pins {[string|int]: things.ThingSummary}?
+---@param my_pins table<string, things.ThingChildInfo>?
 local function disconnect_all_neighbors(me, my_pins)
 	if not me then return end
-	if not my_pins then
-		_, my_pins = remote.call("things", "get_children", me.id)
-	end
+	if not my_pins then my_pins = get_children(me.id) end
 	disconnect_all_pins_entirely(my_pins)
 end
 
@@ -224,7 +224,7 @@ local function devoid_pin_thing(child_id, child_entity)
 end
 
 ---Check a mux for correct number and placement of pins, creating or destroying pin entities as needed.
----@param parent things.ThingSummary
+---@param parent things.ThingShortSummary
 ---@param n_pins 0|2|4|8|16
 function _G.check_pins(parent, n_pins)
 	local pin_layout = pin_layouts[n_pins]
@@ -243,11 +243,12 @@ function _G.check_pins(parent, n_pins)
 	local parent_status = parent.status
 	local child_should_live = parent_status == "real" or parent_status == "ghost"
 
-	local _, children = remote.call("things", "get_children", parent.id)
+	local children = get_children(parent.id)
 	for i = 1, n_pins do
 		local pin_index = tostring(i)
 		local pin_offset = pin_layout[i] --[[@as MapPosition]]
-		local child = children and children[pin_index]
+		local child_info = children and children[pin_index]
+		local child = child_info and child_info.thing
 
 		if (not child) and child_should_live then
 			-- Must create entity and thing
@@ -288,7 +289,7 @@ end
 -- Lifecycle
 --------------------------------------------------------------------------------
 
----@param mux_thing_summary things.ThingSummary
+---@param mux_thing_summary things.ThingShortSummary
 ---@param create_if_missing boolean?
 ---@return LuaEntity? entity
 ---@return ribbon_cables.Multiplexer? state
@@ -370,7 +371,7 @@ event.bind(
 	---@param ev things.EventData.on_edge_changed
 	function(ev)
 		strace.trace("ribbon-cables-on_edge_changed", ev)
-		local _, pins = remote.call("things", "get_children", ev.from.id)
+		local pins = get_children(ev.from.id)
 		local entity, mux = get_mux_info(ev.from, false)
 		if mux then mux:update_connection_render_objects() end
 		entity, mux = get_mux_info(ev.to, false)
@@ -392,11 +393,14 @@ event.bind(
 	"ribbon-cables.mux_children_normalized",
 	---@param mux_thing_summary things.ThingSummary
 	function(mux_thing_summary)
-		strace.trace("ribbon-cables-on_children_normalized", mux_thing_summary)
 		-- Reconnect to all neighbors if not ghost
 		if mux_thing_summary.status == "real" then
-			local _, pins =
-				remote.call("things", "get_children", mux_thing_summary.id)
+			strace.trace(
+				"ribbon-cables.mux_children_normalized",
+				mux_thing_summary,
+				"reconnecting to neighbors"
+			)
+			local pins = get_children(mux_thing_summary.id)
 			disconnect_all_neighbors(mux_thing_summary, pins)
 			connect_all_neighbors(mux_thing_summary, pins, nil, nil)
 		end

@@ -7,6 +7,10 @@
 local events = require("lib.core.event")
 local strace = require("lib.core.strace")
 local ws_lib = require("lib.core.world-state")
+---@diagnostic disable-next-line: unresolved-require
+local things_client = require("__0-things__.client.client") --[[@as things.client]]
+
+local get_children = things_client.parent_child_v1.get_children
 
 local get_world_key = ws_lib.get_world_key
 local get_world_state = ws_lib.get_world_state
@@ -35,7 +39,7 @@ end
 
 ---Save all non-scripted wire connections from a pin.
 ---@param map ribbon_cables.WireConnectionMap
----@param pin things.ThingSummary
+---@param pin things.ThingShortSummary
 local function save_connections(map, pin)
 	local pin_entity = pin.entity
 	if not pin_entity then return end
@@ -91,18 +95,20 @@ events.bind(
 	function(ev)
 		local _, thing = remote.call("things", "get", ev.entity)
 		if not thing or thing.name ~= "ribbon-cables-mux" then return end
-		local _, children = remote.call("things", "get_children", thing.id)
+		local children = get_children(thing.id)
 		if not children then return end
 		for _, pin in pairs(children) do
-			local connection_map = {}
-			save_connections(connection_map, pin)
-			remote.call(
-				"things",
-				"set_transient_data",
-				pin.id,
-				"connections",
-				connection_map
-			)
+			if pin.thing then
+				local connection_map = {}
+				save_connections(connection_map, pin.thing)
+				remote.call(
+					"things",
+					"set_transient_data",
+					pin.thing.id,
+					"connections",
+					connection_map
+				)
+			end
 		end
 	end
 )
@@ -114,10 +120,18 @@ events.bind(
 	function(ev)
 		local _, thing = remote.call("things", "get", ev.entity)
 		if not thing or thing.name ~= "ribbon-cables-mux" then return end
-		local _, children = remote.call("things", "get_children", thing.id)
+		local children = get_children(thing.id)
 		if not children then return end
 		for _, pin in pairs(children) do
-			remote.call("things", "set_transient_data", pin.id, "connections", nil)
+			if pin.thing then
+				remote.call(
+					"things",
+					"set_transient_data",
+					pin.thing.id,
+					"connections",
+					nil
+				)
+			end
 		end
 	end
 )
